@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>POWWOW ビフォーアフター計測</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE: 落ち着いたサロンの計測器。お客様に見せても安心できる、清潔で静かな画面。
+IDEA: 施術カルテと姿勢分析ボード。撮影 → 計測 → 比較シートの3段。
+PICTURE: カメラ映像そのもの。ガイド線・骨格線・前回の残像で位置合わせ。
+COLOUR/TYPE: 白地＋墨色、Before=スレートブルー、After=コーラル。Zen Kaku Gothic New。
+LAYOUT: タブレット横向きは映像左・操作右、縦向き/スマホは縦積み。
+*/
+:root{color-scheme:light;--bg:#f7f5f2;--card:#fff;--ink:#231f1c;--sub:#6f6760;--line:#e4dfd9;--before:#4f7396;--after:#e0674b;--ok:#2f8f6a;--warn:#c9821c;--bad:#c2412d}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;overflow-x:clip}
+button,input,select{font:inherit;color:inherit}
+header{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px max(3vw,14px);background:var(--ink);color:#fff}
+header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.02em}
+header h1 small{font-weight:400;opacity:.7;margin-left:8px;font-size:13px}
+.cust{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;align-items:center}
+.cust input{height:40px;border-radius:8px;border:0;padding:0 10px;font-size:16px;width:150px;background:#fff;color:var(--ink)}
+.cust input[type=date]{width:150px}
+main{padding:14px max(3vw,14px) 40px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{min-height:46px;padding:0 18px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;font-weight:500}
+.tab[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab.res{margin-left:auto;border-color:var(--after);color:var(--after)}
+.tab.res[aria-pressed=true]{background:var(--after);color:#fff}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;background:#141210;border-radius:14px;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:300px;max-height:78vh}
+.stage canvas{display:block;max-width:100%;max-height:78vh;width:auto;height:auto}
+.stage video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.msg{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;justify-content:center;align-items:center;color:#fff;text-align:center;padding:20px;background:rgba(20,18,16,.75);font-size:17px}
+.msg[hidden]{display:none}
+.msg .btn{color:var(--ink)}.msg .btn.pri{color:#fff;background:var(--after);border-color:var(--after)}
+.count{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;font-size:clamp(90px,18vw,200px);font-weight:700;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.5);pointer-events:none}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .35s}
+.panel{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h3{margin:0 0 8px;font-size:14px;color:var(--sub);font-weight:500}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.seg button{min-height:46px;border-radius:10px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-weight:500}
+.seg button[aria-pressed=true]{border-color:currentColor;background:currentColor}
+.seg button[aria-pressed=true] span{color:#fff}
+.seg .b{color:var(--before)}.seg .a{color:var(--after)}.seg .n{color:var(--ink)}
+.seg button span{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:#f1eeea;color:var(--sub)}
+.chip.ok{background:#e3f3ec;color:var(--ok)}.chip.ng{background:#fbeedd;color:var(--warn)}
+.shoot{width:100%;min-height:64px;border:0;border-radius:14px;font-size:20px;font-weight:700;color:#fff;cursor:pointer;background:var(--before)}
+.shoot.after{background:var(--after)}
+.shoot:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{min-height:44px;padding:0 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;cursor:pointer}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+label.inl{display:flex;gap:8px;align-items:center;font-size:14px}
+input[type=range]{width:100%;accent-color:var(--after)}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
+:focus-visible{outline:3px solid var(--after);outline-offset:2px}
+.live{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:14px}
+.live b{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.slot{aspect-ratio:3/4;border-radius:10px;border:1.5px dashed var(--line);background:#faf8f6;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--sub);cursor:pointer;overflow:hidden;position:relative;padding:0}
+.slot img{width:100%;height:100%;object-fit:cover}
+.slot i{position:absolute;left:6px;top:6px;font-style:normal;font-size:11px;padding:2px 8px;border-radius:999px;color:#fff}
+.slot.cur{border:2.5px solid var(--ink)}
+.note{font-size:13px;color:var(--sub);margin:6px 0 0}
+#result[hidden],#capture[hidden]{display:none}
+.resHead{display:flex;flex-wrap:wrap;gap:10px;align-items:end;justify-content:space-between;margin:6px 0 14px}
+.resHead h2{margin:0;font-size:clamp(24px,3.4vw,36px);line-height:1.1}
+.viewBlock{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+.viewBlock h3{margin:0 0 12px;font-size:20px}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pair figure{margin:0}
+.pair canvas{width:100%;height:auto;border-radius:12px;display:block;background:#141210}
+.pair figcaption{font-weight:700;margin-bottom:6px}
+.wipe{margin-top:14px}
+.wipe canvas{width:100%;max-width:520px;display:block;margin:0 auto;border-radius:12px;background:#141210}
+.wipe .lbl{display:flex;justify-content:space-between;max-width:520px;margin:4px auto 0;font-size:13px;font-weight:700}
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:15px}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font-size:13px;color:var(--sub);font-weight:500}
+td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:700}
+.badge.up{background:#e3f3ec;color:var(--ok)}.badge.eq{background:#f1eeea;color:var(--sub)}.badge.dn{background:#fbe6e2;color:var(--bad)}
+.talk{background:#fff7f4;border:1px solid #f4d5cc;border-radius:12px;padding:12px 16px;margin-top:12px}
+.talk h4{margin:0 0 6px;font-size:14px;color:var(--after)}
+.talk ul{margin:0;padding-left:1.2em}
+.disc{font-size:12px;color:var(--sub);margin-top:16px}
+@media(max-width:600px){table{font-size:13px}th,td{padding:8px 4px}.cust input{width:120px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>POWWOW ビフォーアフター計測<small>姿勢・小顔</small></h1>
+  <div class="cust">
+    <input id="cName" placeholder="お客様名" autocomplete="off">
+    <input id="cStore" placeholder="店舗名" autocomplete="off">
+    <input id="cDate" type="date">
+  </div>
+</header>
+
+<main>
+  <div class="tabs" role="toolbar">
+    <button class="tab" id="tPosture" aria-pressed="true">姿勢（仙骨矯正）</button>
+    <button class="tab" id="tFace" aria-pressed="false">小顔矯正</button>
+    <button class="tab res" id="tResult" aria-pressed="false">比較結果を見る</button>
+  </div>
+
+  <section id="capture">
+    <div class="grid">
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted></video>
+        <canvas id="view" width="1280" height="720"></canvas>
+        <div class="count" id="count"></div>
+        <div class="flash" id="flash"></div>
+        <div class="msg" id="msg">
+          <div id="msgText">「カメラを起動」を押してください</div>
+          <div class="row" style="justify-content:center">
+            <button class="btn pri" id="startCam">カメラを起動</button>
+            <button class="btn" id="upBtn2">写真を読み込む</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="card">
+          <h3 id="viewTitle">撮影する向き</h3>
+          <div class="seg" id="viewSeg">
+            <button class="n" data-v="front" aria-pressed="true"><span>正面</span></button>
+            <button class="n" data-v="side" aria-pressed="false"><span>側面</span></button>
+          </div>
+          <div class="seg" style="margin-top:8px">
+            <button class="b" id="phB" aria-pressed="true"><span>施術前 Before</span></button>
+            <button class="a" id="phA" aria-pressed="false"><span>施術後 After</span></button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>位置チェック</h3>
+          <div class="chips" id="chips"><span class="chip">カメラ待機中</span></div>
+          <div class="live" id="live" style="margin-top:10px"></div>
+        </div>
+
+        <label class="inl card" style="padding:12px 14px"><input type="checkbox" id="consent"> 撮影・計測についてお客様の同意を得た</label>
+        <button class="shoot" id="shoot" disabled>Before を撮影</button>
+        <div class="row">
+          <button class="btn" id="upBtn">写真を読み込む</button>
+          <button class="btn" id="flip">カメラ切替</button>
+          <select class="btn" id="timer" aria-label="タイマー">
+            <option value="0">タイマーなし</option>
+            <option value="3" selected>3秒タイマー</option>
+            <option value="5">5秒タイマー</option>
+            <option value="10">10秒タイマー</option>
+          </select>
+          <input type="file" id="file" accept="image/*" hidden>
+        </div>
+
+        <div class="card">
+          <h3>Before の残像（After 撮影時の位置合わせ）</h3>
+          <input type="range" id="ghost" min="0" max="70" value="35" aria-label="残像の濃さ">
+          <label class="inl" style="margin-top:6px"><input type="checkbox" id="gridOn" checked> ガイド線を表示</label>
+        </div>
+
+        <div class="card">
+          <h3>撮影済み</h3>
+          <div class="slots" id="slots"></div>
+          <p class="note">タップで撮り直す枠を選べます。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="result" hidden>
+    <div class="resHead">
+      <h2 id="resTitle">比較結果</h2>
+      <div class="row">
+        <label class="inl"><input type="checkbox" id="adOk"> 広告・SNS掲載の同意あり</label>
+        <button class="btn pri" id="exportBtn">比較画像を保存</button>
+        <button class="btn" id="shareBtn">共有（LINE等）</button>
+        <button class="btn" id="resetBtn">次のお客様へ</button>
+      </div>
+    </div>
+    <div id="resBody"></div>
+    <p class="disc">※ 計測値はカメラ画像から推定した参考値で、医学的な診断ではありません。撮影距離・角度・表情・服装で数値は変わります。同じ位置・同じ照明・三脚固定での撮影をおすすめします。</p>
+  </section>
+</main>
+
+<script type="module">
+import {FilesetResolver, PoseLandmarker, FaceLandmarker} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.2/vision_bundle.mjs";
+const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.2/wasm";
+const MODELS = {
+  pose: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task",
+  face: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task"
+};
+const $ = id => document.getElementById(id);
+const C = {before:"#4f7396", after:"#e0674b", ink:"#231f1c", ok:"#2f8f6a", warn:"#c9821c"};
+
+// ---------- state ----------
+const S = {mode:"posture", view:"front", phase:"before", facing:"environment", shots:{}, live:null, smooth:{}, busy:false, stream:null};
+const key = (m=S.mode, v=S.view, p=S.phase) => `${m}-${m==="face"?"front":v}-${p}`;
+$("cDate").valueAsDate = new Date();
+
+// ---------- MediaPipe ----------
+let vision = null; const LM = {pose:null, face:null}; const LMmode = {pose:"VIDEO", face:"VIDEO"};
+async function getLM(kind){
+  if (LM[kind]) return LM[kind];
+  if (!vision) vision = await FilesetResolver.forVisionTasks(WASM);
+  const make = delegate => kind === "pose"
+    ? PoseLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:MODELS.pose,delegate},runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:.5,minTrackingConfidence:.5})
+    : FaceLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:MODELS.face,delegate},runningMode:"VIDEO",numFaces:1});
+  try { LM[kind] = await make("GPU"); } catch(e){ LM[kind] = await make("CPU"); }
+  LMmode[kind] = "VIDEO";
+  return LM[kind];
+}
+async function setMode(kind, m){ if (LMmode[kind] !== m){ await LM[kind].setOptions({runningMode:m}); LMmode[kind] = m; } }
+const kindOf = () => S.mode === "face" ? "face" : "pose";
+function pickLm(kind, res){ return kind==="face" ? (res.faceLandmarks && res.faceLandmarks[0]) : (res.landmarks && res.landmarks[0]); }
+
+// ---------- geometry ----------
+const P = (lm,i,w,h) => ({x:lm[i].x*w, y:lm[i].y*h, v:lm[i].visibility ?? 1});
+const mid = (a,b) => ({x:(a.x+b.x)/2, y:(a.y+b.y)/2});
+const dist = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+const deg = r => r*180/Math.PI;
+function tiltH(a,b){ const [l,r] = a.x<b.x ? [a,b] : [b,a]; return deg(Math.atan2(r.y-l.y, r.x-l.x)); } // + = 向かって右が下
+function leanV(bottom, top){ return deg(Math.atan2(top.x-bottom.x, bottom.y-top.y)); } // + = 上が右へ
+const OVAL = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+function polyArea(pts){ let s=0; for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length]; s+=a.x*b.y-b.x*a.y;} return Math.abs(s)/2; }
+function sideOf(lm){ const L=[7,11,23,25,27], R=[8,12,24,26,28]; const sv=a=>a.reduce((s,i)=>s+(lm[i].visibility??0),0); return sv(L)>=sv(R) ? {ear:7,sh:11,hip:23,knee:25,ank:27} : {ear:8,sh:12,hip:24,knee:26,ank:28}; }
+
+// ---------- metric definitions ----------
+// kind: "deg" = 角度（0に近いほど良い）, "pct" = 比率（小さいほど良い、変化を%表示）
+const DEFS = {
+  "posture-front":[
+    {k:"shoulder", label:"肩の高さの左右差", kind:"deg", tol:.7, talk:"肩の高さの左右差"},
+    {k:"pelvis", label:"骨盤の傾き", kind:"deg", tol:.7, talk:"骨盤の左右の傾き"},
+    {k:"head", label:"頭の傾き", kind:"deg", tol:.8, talk:"頭の傾き"},
+    {k:"axis", label:"体の中心軸のずれ", kind:"deg", tol:.5, talk:"体の中心軸（足元〜肩）のずれ"}
+  ],
+  "posture-side":[
+    {k:"headFwd", label:"頭の前方突出（ストレートネック傾向）", kind:"deg", tol:1.5, talk:"頭が前に出ている角度"},
+    {k:"trunk", label:"上半身の前傾（猫背傾向）", kind:"deg", tol:1, talk:"上半身の前傾"},
+    {k:"pelvisShift", label:"骨盤の前後のずれ", kind:"deg", tol:.8, talk:"骨盤の前後のずれ"},
+    {k:"plumb", label:"重心線（くるぶし〜耳）のずれ", kind:"deg", tol:.6, talk:"重心線のずれ"}
+  ],
+  "face-front":[
+    {k:"faceW", label:"顔幅（頬骨ライン）", kind:"pct", tol:1, talk:"顔幅"},
+    {k:"jawW", label:"エラ幅（下顎ライン）", kind:"pct", tol:1.2, talk:"エラ幅"},
+    {k:"area", label:"フェイスライン面積", kind:"pct", tol:1.5, talk:"フェイスラインの面積"},
+    {k:"chin", label:"あご角度（Vライン）", kind:"deg", tol:1, talk:"あごの角度", raw:true},
+    {k:"asym", label:"左右の非対称度", kind:"pct", tol:1, talk:"顔の左右差", raw:true},
+    {k:"eye", label:"目の高さの傾き", kind:"deg", tol:.7, talk:"目の高さの傾き"}
+  ]
+};
+const groupKey = (m,v) => m==="face" ? "face-front" : `posture-${v}`;
+
+function computeMetrics(mode, view, lm, w, h){
+  const m = {}, ref = {};
+  if (mode === "face"){
+    const p = i => P(lm,i,w,h);
+    const ipd = dist(p(468), p(473)) || dist(p(33), p(263))*.85;
+    m.faceW = dist(p(234),p(454))/ipd*100;
+    m.jawW = dist(p(172),p(397))/ipd*100;
+    m.area = polyArea(OVAL.map(p))/(ipd*ipd)*100;
+    const c=p(152), a=p(172), b=p(397);
+    m.chin = deg(Math.acos(((a.x-c.x)*(b.x-c.x)+(a.y-c.y)*(b.y-c.y))/(dist(a,c)*dist(b,c))));
+    const t=p(168), u={x:c.x-t.x,y:c.y-t.y}, ul=Math.hypot(u.x,u.y);
+    const sd = q => ((q.x-t.x)*u.y-(q.y-t.y)*u.x)/ul;
+    const pairs=[[234,454],[132,361],[172,397],[58,288],[33,263]];
+    m.asym = pairs.reduce((s,[l,r])=>{const dl=Math.abs(sd(p(l))), dr=Math.abs(sd(p(r))); return s+Math.abs(dl-dr)/(dl+dr);},0)/pairs.length*100;
+    m.eye = tiltH(p(33),p(263));
+    const cl=p(234), cr=p(454), n=p(1), em=mid(p(33),p(263));
+    ref.yaw = (n.x-Math.min(cl.x,cr.x))/Math.abs(cr.x-cl.x);
+    ref.pitch = (n.y-em.y)/(c.y-em.y);
+    ref.scale = ipd/w; ref.ipdPx = ipd;
+  } else if (view === "front"){
+    const p = i => P(lm,i,w,h);
+    m.shoulder = tiltH(p(11),p(12));
+    m.pelvis = tiltH(p(23),p(24));
+    m.head = tiltH(p(7),p(8));
+    const ank = mid(p(27),p(28)), sh = mid(p(11),p(12));
+    m.axis = leanV(ank, sh);
+    ref.scale = (ank.y - p(0).y)/h; ref.sw = dist(p(11),p(12))/(ank.y-p(0).y);
+    ref.full = [0,27,28,11,12].every(i=>lm[i].visibility>.5 && lm[i].y>0.01 && lm[i].y<0.99);
+  } else {
+    const p = i => P(lm,i,w,h); const s = sideOf(lm);
+    const nose=p(0), ear=p(s.ear), sh=p(s.sh), hip=p(s.hip), ank=p(s.ank);
+    const dir = nose.x > ear.x ? 1 : -1; // 顔の向き（+ = 向かって右向き）
+    m.headFwd = leanV(sh, ear)*dir;
+    m.trunk = leanV(hip, sh)*dir;
+    m.pelvisShift = leanV(ank, hip)*dir;
+    m.plumb = leanV(ank, ear)*dir;
+    ref.scale = (ank.y - nose.y)/h; ref.sw = dist(p(11),p(12))/(ank.y-nose.y); ref.dir = dir;
+    ref.full = [0,s.ank,s.sh,s.hip].every(i=>lm[i].visibility>.5 && lm[i].y>0.01 && lm[i].y<0.99);
+  }
+  return {m, ref};
+}
+
+function dirText(groupK, k, v){
+  if (Math.abs(v) < .3) return "";
+  if (groupK==="posture-front" || k==="eye") return v>0 ? "向かって右下がり" : "向かって左下がり";
+  if (groupK==="posture-side") return v>0 ? "前方" : "後方";
+  return "";
+}
+function fmtVal(def, v){ return def.kind==="deg" ? `${Math.abs(v).toFixed(1)}°` : v.toFixed(1); }
+
+// ---------- alignment checks ----------
+function checks(mode, view, lm, w, h){
+  if (!lm) return [{ok:false, t: mode==="face" ? "顔が見つかりません" : "全身が見つかりません"}];
+  const {ref, m} = computeMetrics(mode, view, lm, w, h);
+  const out = [];
+  const before = S.phase==="after" ? S.shots[key(S.mode,S.view,"before")] : null;
+  if (mode==="face"){
+    out.push({ok: ref.ipdPx > w*.07, t: ref.ipdPx > w*.07 ? "顔の大きさOK" : "もう少し近づいて"});
+    out.push({ok: Math.abs(ref.yaw-.5) < .04, t: Math.abs(ref.yaw-.5)<.04 ? "正面OK" : (ref.yaw<.5 ? "顔を少し向かって右へ" : "顔を少し向かって左へ")});
+    out.push({ok: Math.abs(m.eye) < 3, t: Math.abs(m.eye)<3 ? "首の傾きOK" : "首をまっすぐに"});
+    if (before){
+      const sc = ref.scale/before.ref.scale;
+      out.push({ok: Math.abs(sc-1)<.05, t: Math.abs(sc-1)<.05 ? "距離 Beforeと一致" : (sc>1 ? "Beforeより近い" : "Beforeより遠い")});
+      const dp = ref.pitch-before.ref.pitch;
+      out.push({ok: Math.abs(dp)<.04, t: Math.abs(dp)<.04 ? "あごの角度 一致" : (dp>0 ? "あごを少し上げて" : "あごを少し引いて")});
+    }
+  } else {
+    out.push({ok: ref.full, t: ref.full ? "頭〜足首まで映っています" : "頭から足首まで入れてください"});
+    if (view==="side") out.push({ok: ref.sw < .12, t: ref.sw < .12 ? "真横OK" : "もう少し真横を向いて"});
+    if (before){
+      const sc = ref.scale/before.ref.scale;
+      out.push({ok: Math.abs(sc-1)<.05, t: Math.abs(sc-1)<.05 ? "立ち位置 Beforeと一致" : (sc>1 ? "Beforeより近い" : "Beforeより遠い")});
+      if (view==="front"){ const d=ref.sw/before.ref.sw; out.push({ok:Math.abs(d-1)<.08, t:Math.abs(d-1)<.08 ? "体の向き一致" : "体をまっすぐカメラへ"}); }
+      if (view==="side" && ref.dir!==before.ref.dir) out.push({ok:false, t:"Beforeと逆向きです"});
+    }
+  }
+  return out;
+}
+
+// ---------- drawing ----------
+const POSE_LINKS = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28],[27,31],[28,32],[27,29],[28,30]];
+function label(ctx, text, x, y, color, size){
+  ctx.font = `700 ${size}px "Zen Kaku Gothic New",sans-serif`;
+  const w = ctx.measureText(text).width, pad = size*.35;
+  ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.beginPath(); ctx.roundRect(x-pad, y-size*.95, w+pad*2, size*1.35, size*.3); ctx.fill();
+  ctx.fillStyle = color; ctx.fillText(text, x, y);
+}
+// T: 正規化座標 -> 描画座標
+function drawOverlay(ctx, lm, mode, view, T, opt){
+  const {color, scale=1, dashed=false, labels=true, metrics=null} = opt;
+  const lw = Math.max(2, 3*scale), fs = Math.max(12, 22*scale);
+  ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=lw;
+  if (dashed) ctx.setLineDash([lw*3, lw*2.5]);
+  const t = i => T(lm[i]);
+  const line = (a,b,w=lw) => { ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); };
+  const dot = (a,r=lw*1.6) => { ctx.beginPath(); ctx.arc(a.x,a.y,r,0,Math.PI*2); ctx.fill(); };
+  if (mode==="face"){
+    ctx.beginPath(); OVAL.forEach((i,n)=>{const q=t(i); n?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);}); ctx.closePath(); ctx.stroke();
+    ctx.globalAlpha=.85; line(t(234),t(454),lw*.8); line(t(172),t(397),lw*.8);
+    const top=t(10), chin=t(152), br=t(168); ctx.setLineDash([lw*2,lw*2]); line(br, chin, lw*.7); ctx.setLineDash(dashed?[lw*3,lw*2.5]:[]);
+    line(t(152),t(172),lw*.8); line(t(152),t(397),lw*.8);
+    ctx.globalAlpha=1; [234,454,172,397,152,468,473].forEach(i=>dot(t(i),lw*1.2));
+    if (labels && metrics){
+      const a=t(454), b=t(397);
+      label(ctx, `顔幅 ${metrics.faceW.toFixed(1)}`, a.x+fs*.5, a.y, color, fs);
+      label(ctx, `エラ ${metrics.jawW.toFixed(1)}`, b.x+fs*.5, b.y+fs*.3, color, fs);
+      label(ctx, `あご ${metrics.chin.toFixed(1)}°`, chin.x-fs*2.6, chin.y+fs*1.5, color, fs);
+    }
+  } else if (view==="front"){
+    POSE_LINKS.forEach(([a,b])=>line(t(a),t(b)));
+    [0,7,8,11,12,23,24,25,26,27,28].forEach(i=>dot(t(i)));
+    const ank=mid(t(27),t(28)), sh=mid(t(11),t(12)), top=t(0);
+    ctx.setLineDash([lw*2,lw*2]); ctx.globalAlpha=.7;
+    line(ank, {x:ank.x, y:top.y-(ank.y-top.y)*.08}, lw*.8); // 真の垂直線
+    ctx.globalAlpha=1; ctx.setLineDash(dashed?[lw*3,lw*2.5]:[]);
+    line(ank, sh, lw*1.3);
+    const ext = (a,b) => { const d=dist(a,b)*.35, ang=Math.atan2(b.y-a.y,b.x-a.x); return [{x:a.x-Math.cos(ang)*d,y:a.y-Math.sin(ang)*d},{x:b.x+Math.cos(ang)*d,y:b.y+Math.sin(ang)*d}]; };
+    const [s1,s2]=ext(t(11),t(12)), [h1,h2]=ext(t(23),t(24));
+    line(s1,s2,lw*1.4); line(h1,h2,lw*1.4);
+    if (labels && metrics){
+      const rx = Math.max(s1.x,s2.x,h1.x,h2.x)+fs*.4;
+      label(ctx, `肩 ${Math.abs(metrics.shoulder).toFixed(1)}°`, rx, (s1.y+s2.y)/2, color, fs);
+      label(ctx, `骨盤 ${Math.abs(metrics.pelvis).toFixed(1)}°`, rx, (h1.y+h2.y)/2, color, fs);
+      label(ctx, `軸 ${Math.abs(metrics.axis).toFixed(1)}°`, ank.x+fs*.4, (ank.y+sh.y)/2+fs*2, color, fs);
+    }
+  } else {
+    const s = sideOf(lm), ids=[s.ear,s.sh,s.hip,s.knee,s.ank];
+    const pts = ids.map(t);
+    ctx.beginPath(); pts.forEach((q,n)=>n?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.stroke();
+    pts.forEach(q=>dot(q,lw*2));
+    const ank = pts[4];
+    ctx.setLineDash([lw*2,lw*2]); ctx.globalAlpha=.8; ctx.strokeStyle = dashed ? color : "#fff";
+    line(ank, {x:ank.x, y:pts[0].y-(ank.y-pts[0].y)*.1}, lw*.9);
+    ctx.globalAlpha=1; ctx.strokeStyle=color; ctx.setLineDash([]);
+    pts.slice(0,4).forEach(q=>{ ctx.globalAlpha=.6; line(q,{x:ank.x,y:q.y},lw*.7); ctx.globalAlpha=1; });
+    if (labels && metrics){
+      const dir = T(lm[0]).x > pts[0].x ? 1 : -1, off = dir>0 ? -fs*7.2 : fs*.8;
+      label(ctx, `頭 ${metrics.headFwd.toFixed(1)}°`, pts[0].x+off, pts[0].y, color, fs);
+      label(ctx, `上体 ${metrics.trunk.toFixed(1)}°`, pts[1].x+off, pts[1].y+fs, color, fs);
+      label(ctx, `骨盤 ${metrics.pelvisShift.toFixed(1)}°`, pts[2].x+off, pts[2].y, color, fs);
+    }
+  }
+  ctx.restore();
+}
+
+// ---------- camera & live loop ----------
+const video=$("video"), cv=$("view"), ctx=cv.getContext("2d");
+let lastTs = -1, loopOn = false;
+async function startCam(){
+  $("msgText").textContent = "カメラを起動しています…";
+  try{
+    if (S.stream) S.stream.getTracks().forEach(t=>t.stop());
+    S.stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:S.facing, width:{ideal:1920}, height:{ideal:1080}}, audio:false});
+    video.srcObject = S.stream; await video.play();
+    $("msgText").textContent = "AIモデルを読み込んでいます…（初回のみ数秒）";
+    await getLM(kindOf());
+    $("msg").hidden = true; $("shoot").disabled = false;
+    if (!loopOn){ loopOn = true; requestAnimationFrame(loop); }
+  }catch(e){
+    $("msg").hidden = false;
+    $("msgText").innerHTML = "カメラを起動できませんでした。<br>HTTPSのURLで開いているか、カメラの許可を確認してください。<br><small>（写真を読み込んで計測することもできます）</small>";
+    console.error(e);
+  }
+}
+const mirror = () => S.facing === "user";
+function loop(){
+  requestAnimationFrame(loop);
+  if (!video.videoWidth) return;
+  const W = video.videoWidth, H = video.videoHeight;
+  if (cv.width!==W || cv.height!==H){ cv.width=W; cv.height=H; }
+  const kind = kindOf(), lmk = LM[kind];
+  if (lmk && !S.busy && LMmode[kind]==="VIDEO"){
+    const ts = performance.now();
+    if (ts > lastTs){ lastTs = ts;
+      try{ const r = pickLm(kind, lmk.detectForVideo(video, ts)); S.live = r ? (mirror() ? r.map(p=>({...p, x:1-p.x})) : r) : null; }catch(e){ S.live=null; }
+    }
+  }
+  ctx.save(); if (mirror()){ ctx.translate(W,0); ctx.scale(-1,1); } ctx.drawImage(video,0,0,W,H); ctx.restore();
+  const before = S.phase==="after" ? S.shots[key(S.mode,S.view,"before")] : null;
+  const g = +$("ghost").value/100;
+  if (before && g>0){ ctx.save(); ctx.globalAlpha=g; ctx.drawImage(before.canvas,0,0,W,H); ctx.restore(); }
+  if ($("gridOn").checked) drawGuide(W,H);
+  const sc = Math.max(W,H)/1280;
+  const T = p => ({x:p.x*W, y:p.y*H});
+  if (before) drawOverlay(ctx, before.lm, S.mode, S.view, T, {color:C.before, scale:sc, dashed:true, labels:false});
+  if (S.live){
+    const {m} = computeMetrics(S.mode, S.view, S.live, W, H);
+    drawOverlay(ctx, S.live, S.mode, S.view, T, {color: S.phase==="after"?C.after:"#ffffff", scale:sc, labels:false});
+    renderLive(m);
+  } else renderLive(null);
+  renderChips(checks(S.mode, S.view, S.live, W, H));
+}
+function drawGuide(W,H){
+  ctx.save(); ctx.strokeStyle="rgba(255,255,255,.35)"; ctx.lineWidth=Math.max(1,W/900); ctx.setLineDash([8,8]);
+  ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H);
+  if (S.mode==="face"){ ctx.moveTo(0,H*.42); ctx.lineTo(W,H*.42); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.ellipse(W/2,H*.48,H*.17,H*.24,0,0,Math.PI*2); }
+  else { ctx.moveTo(0,H*.06); ctx.lineTo(W,H*.06); ctx.moveTo(0,H*.95); ctx.lineTo(W,H*.95); }
+  ctx.stroke(); ctx.restore();
+}
+function renderLive(m){
+  const defs = DEFS[groupKey(S.mode,S.view)];
+  if (!m){ $("live").innerHTML = ""; return; }
+  $("live").innerHTML = defs.map(d=>{
+    const v = S.smooth[d.k] = (S.smooth[d.k] ?? m[d.k])*.8 + m[d.k]*.2;
+    return `<span>${d.label}</span><b>${fmtVal(d,v)}</b>`;
+  }).join("");
+}
+function renderChips(list){ $("chips").innerHTML = list.map(c=>`<span class="chip ${c.ok?"ok":"ng"}">${c.ok?"✓":"！"} ${c.t}</span>`).join(""); }
+
+// ---------- capture ----------
+const MAXSIDE = 1600;
+function toCanvas(src, w, h, flip){
+  const k = Math.min(1, MAXSIDE/Math.max(w,h)), c = document.createElement("canvas");
+  c.width = Math.round(w*k); c.height = Math.round(h*k);
+  const x = c.getContext("2d"); if (flip){ x.translate(c.width,0); x.scale(-1,1); } x.drawImage(src,0,0,c.width,c.height);
+  return c;
+}
+async function analyzeAndStore(canvas){
+  const kind = kindOf(); S.busy = true;
+  try{
+    const lmk = await getLM(kind); await setMode(kind,"IMAGE");
+    const lm = pickLm(kind, lmk.detect(canvas));
+    await setMode(kind,"VIDEO");
+    if (!lm){ toast(S.mode==="face" ? "顔を検出できませんでした。正面・明るい場所で撮り直してください。" : "全身を検出できませんでした。頭から足首まで入れて撮り直してください。"); return; }
+    const {m, ref} = computeMetrics(S.mode, S.view, lm, canvas.width, canvas.height);
+    S.shots[key()] = {canvas, lm, m, ref, w:canvas.width, h:canvas.height, thumb: canvas.toDataURL("image/jpeg",.6)};
+    advance();
+  } finally { S.busy = false; }
+}
+function advance(){
+  // 次に撮るべき枠へ自動で進む
+  const order = S.mode==="face" ? [["front","before"],["front","after"]] : [["front","before"],["side","before"],["front","after"],["side","after"]];
+  const next = order.find(([v,p]) => !S.shots[key(S.mode,v,p)]);
+  if (next){ S.view = next[0]; S.phase = next[1]; }
+  S.smooth = {}; renderUI();
+  if (!next) showResult();
+}
+async function shoot(){
+  if (!$("consent").checked){ toast("撮影前にお客様の同意を確認し、チェックを入れてください。"); return; }
+  const sec = +$("timer").value; $("shoot").disabled = true;
+  for (let i=sec;i>0;i--){ $("count").textContent=i; await new Promise(r=>setTimeout(r,1000)); }
+  $("count").textContent=""; const f=$("flash"); f.style.opacity=.9; setTimeout(()=>f.style.opacity=0,60);
+  const c = toCanvas(video, video.videoWidth, video.videoHeight, mirror());
+  await analyzeAndStore(c); $("shoot").disabled = false;
+}
+async function fromFile(file){
+  if (!file) return;
+  if (!$("consent").checked){ toast("撮影前にお客様の同意を確認し、チェックを入れてください。"); return; }
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = async () => { const c = toCanvas(img, img.naturalWidth, img.naturalHeight, false); URL.revokeObjectURL(url); await analyzeAndStore(c); };
+  img.src = url;
+}
+function toast(t){ const m=$("msg"); const wasHidden=m.hidden; $("msgText").textContent=t; m.hidden=false; setTimeout(()=>{ if(wasHidden && video.videoWidth){ m.hidden=true; } },2600); }
+
+// ---------- UI ----------
+function renderUI(){
+  $("tPosture").setAttribute("aria-pressed", S.mode==="posture" && $("result").hidden);
+  $("tFace").setAttribute("aria-pressed", S.mode==="face" && $("result").hidden);
+  $("tResult").setAttribute("aria-pressed", !$("result").hidden);
+  $("viewSeg").style.display = S.mode==="face" ? "none" : "";
+  $("viewTitle").textContent = S.mode==="face" ? "小顔：正面で撮影（真顔・髪を耳にかける）" : "撮影する向き";
+  document.querySelectorAll("#viewSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===S.view));
+  $("phB").setAttribute("aria-pressed", S.phase==="before"); $("phA").setAttribute("aria-pressed", S.phase==="after");
+  const sh=$("shoot"); sh.textContent = `${S.phase==="before"?"Before":"After"}（${S.mode==="face"?"小顔":S.view==="front"?"正面":"側面"}）を撮影`; sh.classList.toggle("after", S.phase==="after");
+  const views = S.mode==="face" ? ["front"] : ["front","side"];
+  $("slots").innerHTML = views.flatMap(v=>["before","after"].map(p=>{
+    const s=S.shots[key(S.mode,v,p)], cur = v===(S.mode==="face"?"front":S.view) && p===S.phase;
+    const name = `${S.mode==="face"?"顔":v==="front"?"正面":"側面"} ${p==="before"?"Before":"After"}`;
+    return `<button class="slot ${cur?"cur":""}" data-v="${v}" data-p="${p}">${s?`<img src="${s.thumb}" alt="">`:name}<i style="background:${p==="before"?C.before:C.after}">${name}</i></button>`;
+  })).join("");
+  $("slots").style.gridTemplateColumns = "repeat(2,minmax(0,1fr))";
+}
+$("slots").addEventListener("click", e=>{ const b=e.target.closest(".slot"); if(!b) return; S.view=b.dataset.v; S.phase=b.dataset.p; S.smooth={}; renderUI(); });
+document.querySelectorAll("#viewSeg button").forEach(b=>b.onclick=()=>{ S.view=b.dataset.v; S.smooth={}; renderUI(); });
+$("phB").onclick=()=>{S.phase="before"; renderUI();}; $("phA").onclick=()=>{S.phase="after"; renderUI();};
+async function setModeUI(m){
+  S.mode=m; if(m==="face") S.view="front"; S.smooth={}; S.live=null;
+  $("result").hidden=true; $("capture").hidden=false; renderUI();
+  if (video.videoWidth){ $("msg").hidden=false; $("msgText").textContent="AIモデルを読み込んでいます…"; await getLM(kindOf()); $("msg").hidden=true; }
+}
+$("tPosture").onclick=()=>setModeUI("posture"); $("tFace").onclick=()=>setModeUI("face");
+$("tResult").onclick=()=>showResult();
+$("startCam").onclick=startCam; $("shoot").onclick=shoot;
+$("flip").onclick=()=>{ S.facing = S.facing==="user"?"environment":"user"; if (S.stream) startCam(); };
+$("upBtn").onclick=$("upBtn2").onclick=()=>$("file").click();
+$("file").onchange=e=>{ fromFile(e.target.files[0]); e.target.value=""; };
+
+// ---------- result ----------
+function cropRect(shot, mode, view){
+  const {lm,w,h} = shot, p = i => P(lm,i,w,h);
+  if (mode==="face"){ const u = shot.ref.ipdPx, c = mid(p(10),p(152)); const ch=u*4.8, cw=u*3.9; return {x:c.x-cw/2, y:c.y-ch/2, w:cw, h:ch}; }
+  const top = p(0).y, ank = view==="front" ? mid(p(27),p(28)) : p(sideOf(lm).ank), H = ank.y-top;
+  const ch = H*1.32, cw = ch*.62; return {x:ank.x-cw/2, y:(top+ank.y)/2-H*.03-ch/2, w:cw, h:ch};
+}
+function drawShot(c2, shot, mode, view, color, dw){
+  const r = cropRect(shot, mode, view), dh = Math.round(dw*r.h/r.w);
+  c2.width = dw; c2.height = dh; const x = c2.getContext("2d");
+  x.fillStyle="#141210"; x.fillRect(0,0,dw,dh);
+  const k = dw/r.w;
+  const sx=Math.max(0,r.x), sy=Math.max(0,r.y), ex=Math.min(shot.w,r.x+r.w), ey=Math.min(shot.h,r.y+r.h);
+  if (ex>sx && ey>sy) x.drawImage(shot.canvas, sx,sy,ex-sx,ey-sy, (sx-r.x)*k,(sy-r.y)*k,(ex-sx)*k,(ey-sy)*k);
+  return {x, T: q => ({x:(q.x*shot.w-r.x)*k, y:(q.y*shot.h-r.y)*k}), dh};
+}
+function renderAnnotated(c2, shot, mode, view, color, dw){
+  const {x,T} = drawShot(c2, shot, mode, view, color, dw);
+  drawOverlay(x, shot.lm, mode, view, T, {color, scale: dw/700, labels:true, metrics:shot.m});
+}
+function compare(def, b, a){
+  const bv = def.kind==="deg" && !def.raw ? Math.abs(b) : b, av = def.kind==="deg" && !def.raw ? Math.abs(a) : a;
+  let change, improved;
+  if (def.kind==="pct" && !def.raw){ change = (av-bv)/bv*100; improved = change < -def.tol ? 1 : change > def.tol ? -1 : 0; return {bv,av,improved,txt:`${change>0?"+":""}${change.toFixed(1)}%`}; }
+  change = av-bv; improved = change < -def.tol ? 1 : change > def.tol ? -1 : 0;
+  return {bv,av,improved,txt:`${change>0?"+":""}${change.toFixed(1)}${def.kind==="deg"?"°":"pt"}`};
+}
+function resultRows(mode, view){
+  const b=S.shots[key(mode,view,"before")], a=S.shots[key(mode,view,"after")];
+  if(!b||!a) return null;
+  return DEFS[groupKey(mode,view)].map(d=>({d, ...compare(d, b.m[d.k], a.m[d.k]), bdir:dirText(groupKey(mode,view),d.k,b.m[d.k])}));
+}
+function talkLines(rows){
+  return rows.filter(r=>r.improved===1).map(r=>{
+    if (r.d.kind==="pct" && !r.d.raw) return `${r.d.talk}が ${Math.abs((r.av-r.bv)/r.bv*100).toFixed(1)}% すっきりしました`;
+    return `${r.d.talk}が ${fmtVal(r.d,r.bv)} → ${fmtVal(r.d,r.av)} に改善しました`;
+  });
+}
+function showResult(){
+  $("capture").hidden=true; $("result").hidden=false; renderUI();
+  const mode=S.mode, views = mode==="face" ? ["front"] : ["front","side"];
+  $("resTitle").textContent = `${$("cName").value ? $("cName").value+" 様　" : ""}${mode==="face"?"小顔矯正":"姿勢（仙骨矯正）"}の比較結果`;
+  const body = $("resBody"); body.innerHTML="";
+  let any=false;
+  views.forEach(v=>{
+    const b=S.shots[key(mode,v,"before")], a=S.shots[key(mode,v,"after")];
+    const blk=document.createElement("div"); blk.className="viewBlock";
+    const name = mode==="face" ? "正面（フェイスライン）" : v==="front" ? "正面（左右バランス）" : "側面（前後バランス・重心線）";
+    if(!b||!a){ blk.innerHTML=`<h3>${name}</h3><p class="note">${!b?"Before":"After"} が未撮影です。</p>`; body.appendChild(blk); return; }
+    any=true;
+    const rows=resultRows(mode,v), talks=talkLines(rows);
+    blk.innerHTML = `<h3>${name}</h3>
+      <div class="pair"><figure><figcaption style="color:${C.before}">Before 施術前</figcaption><canvas></canvas></figure><figure><figcaption style="color:${C.after}">After 施術後</figcaption><canvas></canvas></figure></div>
+      <div class="wipe"><canvas></canvas><input type="range" min="0" max="100" value="50" aria-label="Before/After スライダー"><div class="lbl"><span style="color:${C.before}">← Before</span><span style="color:${C.after}">After →</span></div></div>
+      <table><thead><tr><th>計測項目</th><th>Before</th><th>After</th><th>変化</th><th></th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td>${r.d.label}${r.bdir?`<br><small style="color:var(--sub)">施術前：${r.bdir}</small>`:""}</td><td class="b">${fmtVal(r.d,r.bv)}</td><td class="a">${fmtVal(r.d,r.av)}</td><td>${r.txt}</td><td><span class="badge ${r.improved>0?"up":r.improved<0?"dn":"eq"}">${r.improved>0?"改善":r.improved<0?"要確認":"誤差範囲"}</span></td></tr>`).join("")}
+      </tbody></table>
+      ${talks.length?`<div class="talk"><h4>お客様へのご説明</h4><ul>${talks.map(t=>`<li>${t}</li>`).join("")}</ul></div>`:""}`;
+    body.appendChild(blk);
+    const [cb, ca] = blk.querySelectorAll(".pair canvas");
+    renderAnnotated(cb, b, mode, v, C.before, 700); renderAnnotated(ca, a, mode, v, C.after, 700);
+    const wc = blk.querySelector(".wipe canvas"), rg = blk.querySelector(".wipe input");
+    const bi=document.createElement("canvas"), ai=document.createElement("canvas");
+    drawShot(bi,b,mode,v,C.before,700); drawShot(ai,a,mode,v,C.after,700);
+    const drawW = () => { wc.width=bi.width; wc.height=bi.height; const x=wc.getContext("2d"), sx=bi.width*rg.value/100;
+      x.drawImage(ai,0,0); x.drawImage(bi,0,0,sx,bi.height,0,0,sx,bi.height);
+      x.fillStyle="#fff"; x.fillRect(sx-2,0,4,bi.height); };
+    rg.oninput=drawW; drawW();
+  });
+  $("exportBtn").disabled = $("shareBtn").disabled = !any;
+}
+
+// ---------- export ----------
+function buildExport(){
+  const mode=S.mode, views=(mode==="face"?["front"]:["front","side"]).filter(v=>S.shots[key(mode,v,"before")]&&S.shots[key(mode,v,"after")]);
+  const W=1600, pad=60, colW=(W-pad*3)/2;
+  const parts = views.map(v=>{
+    const cb=document.createElement("canvas"), ca=document.createElement("canvas");
+    renderAnnotated(cb,S.shots[key(mode,v,"before")],mode,v,C.before,colW); renderAnnotated(ca,S.shots[key(mode,v,"after")],mode,v,C.after,colW);
+    return {v, cb, ca, rows: resultRows(mode,v)};
+  });
+  const rowH=58, H = 190 + parts.reduce((s,p)=>s+70+p.cb.height+40+p.rows.length*rowH+50,0) + 110;
+  const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+  const F = (w,s)=>`${w} ${s}px "Zen Kaku Gothic New","Hiragino Sans",sans-serif`;
+  x.fillStyle="#f7f5f2"; x.fillRect(0,0,W,H);
+  x.fillStyle=C.ink; x.fillRect(0,0,W,150);
+  x.fillStyle="#fff"; x.font=F(700,50); x.fillText(`${mode==="face"?"小顔矯正":"姿勢（仙骨矯正）"} ビフォーアフター`, pad, 82);
+  x.font=F(400,26); x.globalAlpha=.8;
+  x.fillText([`${$("cName").value?$("cName").value+" 様":""}`, $("cStore").value, $("cDate").value].filter(Boolean).join("　｜　")+"　｜　POWWOW", pad, 126); x.globalAlpha=1;
+  let y=190;
+  parts.forEach(p=>{
+    x.fillStyle=C.ink; x.font=F(700,34);
+    x.fillText(mode==="face"?"正面（フェイスライン）":p.v==="front"?"正面（左右バランス）":"側面（前後バランス）", pad, y+20); y+=50;
+    x.font=F(700,28); x.fillStyle=C.before; x.fillText("Before 施術前", pad, y+10); x.fillStyle=C.after; x.fillText("After 施術後", pad*2+colW, y+10); y+=24;
+    x.drawImage(p.cb,pad,y); x.drawImage(p.ca,pad*2+colW,y); y+=p.cb.height+40;
+    p.rows.forEach(r=>{
+      x.fillStyle="#fff"; x.fillRect(pad,y,W-pad*2,rowH-6);
+      x.fillStyle=C.ink; x.font=F(500,26); x.fillText(r.d.label, pad+20, y+36);
+      x.textAlign="right"; x.fillStyle=C.before; x.fillText(fmtVal(r.d,r.bv), 1000, y+36);
+      x.fillStyle=C.ink; x.fillText("→",1060,y+36);
+      x.fillStyle=C.after; x.font=F(700,28); x.fillText(fmtVal(r.d,r.av), 1190, y+36);
+      x.font=F(700,24); x.fillStyle = r.improved>0?C.ok:"#8a817a"; x.fillText(r.improved>0?`改善 ${r.txt}`:"誤差範囲", W-pad-20, y+36);
+      x.textAlign="left"; y+=rowH;
+    });
+    y+=50;
+  });
+  x.fillStyle="#8a817a"; x.font=F(400,20);
+  x.fillText("※ カメラ画像からAIで推定した参考値です（医学的な診断ではありません）。", pad, H-70);
+  x.fillText(`広告・SNS掲載の同意：${$("adOk").checked?"あり":"なし（店内説明用）"}`, pad, H-40);
+  return c;
+}
+function fileName(){ return `POWWOW_${S.mode==="face"?"小顔":"姿勢"}_${($("cName").value||"お客様").replace(/[\\/:*?"<>|]/g,"")}_${$("cDate").value}.png`; }
+$("exportBtn").onclick=()=>{ buildExport().toBlob(b=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=fileName(); a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); },"image/png"); };
+$("shareBtn").onclick=()=>{ buildExport().toBlob(async b=>{
+  const f=new File([b], fileName(), {type:"image/png"});
+  try{ if(navigator.canShare && navigator.canShare({files:[f]})) await navigator.share({files:[f], title:"ビフォーアフター"}); else $("exportBtn").click(); }catch(e){}
+},"image/png"); };
+$("resetBtn").onclick=()=>{ if(!confirm("撮影データを消去して次のお客様へ進みますか？（保存していない画像は消えます）")) return;
+  S.shots={}; S.view="front"; S.phase="before"; $("cName").value=""; $("consent").checked=false; $("adOk").checked=false; setModeUI(S.mode); };
+
+renderUI();
+</script>
+</body>
+</html>
