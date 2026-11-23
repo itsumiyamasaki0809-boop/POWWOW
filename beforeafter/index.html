@@ -108,6 +108,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .iss.beauty{background:#fdeef2}.iss.beauty b{background:#e0567a}.iss.beauty li{color:#c43c62}
 .iss.health{background:#e9f3f8}.iss.health b{background:#2f7fa3}.iss.health li{color:#23688a}
 @media(max-width:600px){.issues{grid-template-columns:minmax(0,1fr)}}
+.futHead{margin:22px 0 8px;font-size:clamp(20px,2.6vw,26px);color:#c9405b;border-top:2px dashed #f0c3c9;padding-top:16px}
 .future{background:var(--ink);color:#fff;border-radius:14px;padding:16px 18px;margin-top:14px}
 .future h4{margin:0 0 8px;font-size:18px;color:#ffb4a3}
 .future ul{margin:0;padding-left:1.2em}.future li{margin:3px 0}
@@ -1160,8 +1161,6 @@ function showCheck(){
     const blk=document.createElement("div"); blk.className="viewBlock";
     const flagged=list.filter(r=>r.lv!=="info");
     blk.innerHTML = `<h3>${name}</h3>
-      ${illusHtml(mode, v, b.m, flagged)}
-      <h4 style="margin:18px 0 8px;font-size:16px">写真で見ると</h4>
       <div class="pair"><figure><canvas></canvas>
         <div class="legend"><span style="--c:${C.before}">今のあなた</span><span style="--c:#d23c2a">このままだと…（イメージ）</span></div></figure>
       <div>
@@ -1170,7 +1169,9 @@ function showCheck(){
           <div class="iss beauty"><b>美容面の課題</b><ul>${pick(list,"beauty").map(x=>`<li>${x}</li>`).join("")||"<li>今の状態をキープしましょう</li>"}</ul></div>
           <div class="iss health"><b>健康面の課題</b><ul>${pick(list,"health").map(x=>`<li>${x}</li>`).join("")||"<li>今の状態をキープしましょう</li>"}</ul></div>
         </div>
-      </div></div>`;
+      </div></div>
+      <h4 class="futHead">このままだと…</h4>
+      ${illusHtml(mode, v, b.m, flagged)}`;
     body.appendChild(blk);
     const cv2=blk.querySelector("canvas");
     const {x,T}=drawShot(cv2,b,mode,v,C.before,700);
