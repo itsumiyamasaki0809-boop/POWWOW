@@ -80,7 +80,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .slot i{position:absolute;left:6px;top:6px;font-style:normal;font-size:11px;padding:2px 8px;border-radius:999px;color:#fff}
 .slot.cur{border:2.5px solid var(--ink)}
 .note{font-size:13px;color:var(--sub);margin:6px 0 0}
-#result[hidden],#capture[hidden],#check[hidden]{display:none}
+#result[hidden],#capture[hidden],#check[hidden],#intro[hidden]{display:none}
 .tab.chk{margin-left:auto;border-color:var(--before);color:var(--before)}
 .tab.chk[aria-pressed=true]{background:var(--before);color:#fff}
 .tab.chk+.tab.res{margin-left:0}
@@ -128,6 +128,8 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .gallery-item{background:#fff;padding:.5rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
 .ba-slider{position:relative;width:100%;aspect-ratio:560/676;overflow:hidden;border-radius:4px;user-select:none;touch-action:pan-y;cursor:ew-resize;background:#eee}
 .ba-slider img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+.gallery-container.body{grid-template-columns:minmax(0,1fr);max-width:460px}
+.ba-slider.tall{aspect-ratio:2/3}
 .ba-slider .ba-before{clip-path:inset(0 calc(100% - var(--p)) 0 0)}
 .ba-tag{position:absolute;top:.5rem;font-weight:500;font-size:1rem;letter-spacing:.05em;color:#fff;background:rgba(194,24,91,.85);padding:.3rem .85rem;border-radius:3px;z-index:3;pointer-events:none}
 .ba-tag-before{left:.5rem}.ba-tag-after{right:.5rem}
@@ -152,6 +154,22 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .staff-banner-text .accent{color:#FFEB3B}
 .staff-banner-text .sub{display:block;font-size:.75em;font-weight:300;opacity:.85;margin:.5rem 0 1rem}
 @media(max-width:600px){.gallery-container{grid-template-columns:1fr}}
+.hero{background:var(--pinkd);border-radius:16px;padding:3.2rem 1.5rem 2.8rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(255,255,255,.15) 0%,transparent 70%);pointer-events:none}
+.hero-title-jp{font-weight:400;font-size:clamp(1.4rem,4.6vw,2.4rem);color:#fff;line-height:1.75;margin:0;position:relative}
+.hero-title-jp strong{color:#FFEB3B;font-weight:500}
+.symptom-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;max-width:1100px;margin:0 auto}
+.symptom-card{position:relative;background:#fff;border:1px solid #f6b3c8;border-radius:12px;padding:2.2rem .8rem 1.4rem;text-align:center;cursor:pointer;font:inherit;color:var(--ink);transition:transform .15s,box-shadow .15s}
+.symptom-card::before{content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:60px;height:4px;background:var(--pink);border-radius:0 0 4px 4px}
+.symptom-card .ic{font-size:2.4rem;display:block;margin-bottom:.9rem}
+.symptom-card .tx{font-size:.98rem;line-height:1.7;margin:0}
+.symptom-card .ck{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;border:1.5px solid #f6b3c8;color:transparent;display:flex;align-items:center;justify-content:center;font-size:14px}
+.symptom-card[aria-pressed=true]{background:var(--pale);border-color:var(--pink);box-shadow:0 6px 16px rgba(233,30,99,.18)}
+.symptom-card[aria-pressed=true] .ck{background:var(--pink);border-color:var(--pink);color:#fff}
+.symptom-hint{text-align:center;color:#AD1457;font-size:.9rem;margin:1.2rem 0}
+.intro-go{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:1rem 0 2rem}
+.intro-go .btn{min-height:56px;padding:0 26px;font-size:17px}
+@media(max-width:800px){.symptom-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .tag{font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px}
 .tag.alert{background:#fde3df;color:#b8321f}.tag.warn{background:#fdf0d8;color:#9a6110}.tag.ok{background:#e3f3ec;color:var(--ok)}
@@ -223,11 +241,23 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
 
 <main>
   <div class="tabs" role="toolbar">
+    <button class="tab" id="tIntro" aria-pressed="false">お悩みチェック</button>
     <button class="tab" id="tPosture" aria-pressed="true">姿勢（仙骨矯正）</button>
     <button class="tab" id="tFace" aria-pressed="false">小顔矯正</button>
     <button class="tab chk" id="tCheck" aria-pressed="false">現状チェック</button>
     <button class="tab res" id="tResult" aria-pressed="false">比較結果を見る</button>
   </div>
+
+  <section id="intro" hidden>
+    <div class="hero"><p class="hero-title-jp">首や肩こりはもちろん女性特有の<br><strong>「なんとなくしんどい」</strong>には<br>実は<strong>原因</strong>があります。</p></div>
+    <h2 class="section-title" style="margin-top:2.5rem">こんなお悩み、少しでもあればチェック！</h2>
+    <div class="symptom-grid" id="symGrid"></div>
+    <p class="symptom-hint">気になるものをすべてタップしてから、撮影に進んでください</p>
+    <div class="intro-go">
+      <button class="btn pri" id="goPosture">姿勢を撮影する（横向き）</button>
+      <button class="btn" id="goFace">小顔を撮影する</button>
+    </div>
+  </section>
 
   <section id="capture">
     <div class="grid">
@@ -332,7 +362,7 @@ const $ = id => document.getElementById(id);
 const C = {before:"#9C6B84", after:"#E91E63", ink:"#4A041E", ok:"#2f8f6a", warn:"#c9821c"};
 const LOGO = new Image(); LOGO.src = "powwow-logo.png";
 // 古い版がブラウザに残っていたら、最新版に自動で切り替える
-const APP_VER = "20261123-1740";
+const APP_VER = "20261123-1800";
 fetch(location.pathname + "?nc=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).then(t=>{
   const m = t.match(/const APP_VER = "([^"]+)"/);
   if (m && m[1] !== APP_VER && !sessionStorage.getItem("reloaded-"+m[1])) {
@@ -879,9 +909,10 @@ async function fromFile(file){
 function toast(t){ const m=$("msg"); const wasHidden=m.hidden; $("msgText").textContent=t; m.hidden=false; setTimeout(()=>{ if(wasHidden && video.videoWidth){ m.hidden=true; } },2600); }
 
 // ---------- UI ----------
-function screen(n){ S.screen=n; ["capture","check","result"].forEach(id=>$(id).hidden = id!==n); renderUI(); window.scrollTo(0,0); }
+function screen(n){ S.screen=n; ["intro","capture","check","result"].forEach(id=>$(id).hidden = id!==n); renderUI(); window.scrollTo(0,0); if(n==="intro") renderSymGrid(); }
 function renderUI(){
   const sc=S.screen||"capture";
+  $("tIntro").setAttribute("aria-pressed", sc==="intro");
   $("tPosture").setAttribute("aria-pressed", S.mode==="posture" && sc==="capture");
   $("tFace").setAttribute("aria-pressed", S.mode==="face" && sc==="capture");
   $("tCheck").setAttribute("aria-pressed", sc==="check");
@@ -1485,6 +1516,13 @@ function symHtml(mode, top){
     ${SYMPTOMS.filter(x=>S.sym.has(x.k)).map(x=>`<p><span class="sy">${x.t}</span>写真の<b>「${what}」</b>とつながっている可能性があります。${symLink(mode,top,x.k)}</p>`).join("")}
     <p class="close">→ 土台の仙骨から整えることで、姿勢と一緒にこうした不調にもアプローチします。</p></div>`;
 }
+const SYM_IC = {sleep:"😴", dull:"😮‍💨", mood:"😤", body:"🌡"};
+const SYM_TX = {sleep:"寝ても疲れが取れない<br>寝つけない・眠りが浅い", dull:"朝からだるい<br>やる気が出ない", mood:"イライラしやすい<br>気分が沈みやすい", body:"肩こり・首こり・足のむくみ・<br>冷え・便秘"};
+function renderSymGrid(){
+  const g=$("symGrid"); if(!g) return;
+  g.innerHTML = SYMPTOMS.map(x=>`<button type="button" class="symptom-card" data-k="${x.k}" aria-pressed="${S.sym.has(x.k)}"><span class="ck">✓</span><span class="ic">${SYM_IC[x.k]}</span><p class="tx">${SYM_TX[x.k]}</p></button>`).join("");
+  g.querySelectorAll(".symptom-card").forEach(b=>b.onclick=()=>{ const k=b.dataset.k; S.sym.has(k)?S.sym.delete(k):S.sym.add(k); b.setAttribute("aria-pressed", S.sym.has(k)); });
+}
 function symSelectHtml(){
   return `<div class="symsel"><b>カウンセリングで選んだお悩み</b>
     ${SYMPTOMS.map(x=>`<button type="button" class="symbtn" data-k="${x.k}" aria-pressed="${S.sym.has(x.k)}">${x.t}</button>`).join("")}</div>`;
@@ -1492,19 +1530,23 @@ function symSelectHtml(){
 
 
 // ---------- 3ヶ月続ける流れ（カウンセリングシートと同じ内容） ----------
-function careFlowHtml(){
-  const item=(age,b,a,cb,ca)=>`<div class="gallery-item">
-    <div class="ba-slider" data-ba style="--p:50%"><span class="ba-tag ba-tag-before">施術前</span><span class="ba-tag ba-tag-after">施術後</span>
+function careFlowHtml(mode){
+  const item=(age,b,a,cb,ca,tall)=>`<div class="gallery-item">
+    <div class="ba-slider${tall?" tall":""}" data-ba style="--p:50%"><span class="ba-tag ba-tag-before">施術前</span><span class="ba-tag ba-tag-after">施術後</span>
       <img class="ba-after" src="${a}" alt="${age} 施術後"><img class="ba-before" src="${b}" alt="${age} 施術前"><div class="ba-handle"></div></div>
-    <p class="ba-caption-label">${age}（3ヶ月・8回ご利用）</p>
+    ${age?`<p class="ba-caption-label">${age}（3ヶ月・8回ご利用）</p>`:""}
     <div class="ba-caption-switch"><p class="ba-caption-state before-state is-active">施術前：${cb}</p><p class="ba-caption-state after-state">施術後：${ca}</p></div></div>`;
   return `<section class="careflow">
-    <p class="reason-question">どちらの表情で生活したいですか？</p>
+    ${mode==="face" ? `<p class="reason-question">どちらの表情で生活したいですか？</p>
     <div class="gallery-container">
       ${item("40代","case40-before.jpg","case40-after.jpg","二重アゴ・もたつき・たるみ・だるさ・疲れ顔","表情が明るい・目がぱっちり・たるみがきゅっと！二重あごスッキリ")}
       ${item("50代","case50-before.jpg","case50-after.jpg","ふけ顔・顔色が悪い・たるみ・疲れ顔","表情が明るい・目がぱっちり・たるみがきゅっと！・小顔")}
     </div>
-    <p class="gallery-note">この変化は、顔だけを施術した結果ではありません。<br>3ヶ月かけて土台である仙骨から整えたことで、心身ともに健やかになり、本来の美しさが引き出された結果です。</p>
+    <p class="gallery-note">この変化は、顔だけを施術した結果ではありません。<br>3ヶ月かけて土台である仙骨から整えたことで、心身ともに健やかになり、本来の美しさが引き出された結果です。</p>` : `<p class="reason-question">どちらの姿勢で生活したいですか？</p>
+    <div class="gallery-container body">
+      ${item("","body-before.jpg","body-after.jpg","背中の丸み・頭が前に出る・下腹ぽっこり","背すじが伸びる・お腹すっきり・ヒップの位置が上がる", true)}
+    </div>
+    <p class="gallery-note">姿勢の変化は、その場で背すじを伸ばしただけでは続きません。<br>土台である仙骨から整えることで、きれいな姿勢が自然と保てる体へ変わっていきます。</p>`}
     <div class="care-chart-section"><h2 class="section-title">3ヶ月で、根本から変わる。</h2>
       <p class="care-chart-lead">パウワウのケアは、その場かぎりのリラクゼーションではありません。<br>身体は3ヶ月かけて変わっていくと言われています。仙骨から根本的に整えることで、その変化を後押しします。<br>年齢は関係ありません。今から始めても、決して遅くはないのです。</p>
       <div class="care-chart-img-wrap"><img src="care-chart.png" alt="継続的なケアによる変化のイメージ図：土台期・調整期・メンテナンス期"></div></div>
@@ -1561,7 +1603,7 @@ function showCheck(){
     drawOverlay(x,b.lm,mode,v,T,{color:C.before,scale:1,labels:false});
     drawEvidence(x,b,mode,v,T,top);
   });
-  body.insertAdjacentHTML("beforeend", careFlowHtml());
+  body.insertAdjacentHTML("beforeend", careFlowHtml(mode));
   bindCareFlow(body);
 }
 
@@ -1628,7 +1670,10 @@ $("shareBtn").onclick=()=>{ buildExport().toBlob(async b=>{
 $("resetBtn").onclick=()=>{ if(!confirm("撮影データを消去して次のお客様へ進みますか？（保存していない画像は消えます）")) return;
   S.shots={}; S.sym=new Set(); S.view = S.mode==="face" ? "front" : "side"; S.phase="before"; $("cName").value=""; $("consent").checked=false; $("adOk").checked=false; setModeUI(S.mode); };
 
-renderUI();
+$("tIntro").onclick=()=>screen("intro");
+$("goPosture").onclick=()=>setModeUI("posture");
+$("goFace").onclick=()=>setModeUI("face");
+screen("intro");
 </script>
 </body>
 </html>
