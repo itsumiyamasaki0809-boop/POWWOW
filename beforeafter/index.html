@@ -279,7 +279,7 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
   </div>
 
   <section id="intro" hidden>
-    <div class="hero"><p class="hero-title-jp">首や肩こりはもちろん女性特有の<br><strong>「なんとなくしんどい」</strong>には<br>実は<strong>原因</strong>があります。</p></div>
+    <div class="hero"><p class="hero-title-jp">首や肩こりはもちろん<br><strong>「女性のなんとなくしんどい」</strong>には<br>実は<strong>原因</strong>があります。</p></div>
     <h2 class="section-title" style="margin-top:2.5rem">こんなお悩み、少しでもあればチェック！</h2>
     <div class="symptom-grid" id="symGrid"></div>
     <p class="symptom-hint" id="symHint">気になるものをすべてタップしてから、下のボタンを押してください</p>
@@ -308,7 +308,7 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
       </div>
 
       <div class="benefits">
-        <h2 class="section-title">仙骨を整えると、肩こりだけじゃない</h2>
+        <h2 class="section-title">仙骨を整えると、解消されるのは肩こりだけじゃない</h2>
         <p class="benefits-lead">パウワウ独自の「仙骨ケア」（サクラムバランステクニック®）で、骨盤の中心にある仙骨にアプローチ。<br>土台が整うと、からだ全体にいい変化が広がっていきます。</p>
         <div class="benefit-grid">
           <div class="benefit"><span class="bn">1</span><h4><em>肩こり・首こり・腰痛</em></h4><p>土台が整うと、首・肩・腰にかかる負担が分散されやすくなります。</p></div>
@@ -433,7 +433,7 @@ const $ = id => document.getElementById(id);
 const C = {before:"#9C6B84", after:"#E91E63", ink:"#4A041E", ok:"#2f8f6a", warn:"#c9821c"};
 const LOGO = new Image(); LOGO.src = "powwow-logo.png";
 // 古い版がブラウザに残っていたら、最新版に自動で切り替える
-const APP_VER = "20261123-1835";
+const APP_VER = "20261123-1910";
 fetch(location.pathname + "?nc=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).then(t=>{
   const m = t.match(/const APP_VER = "([^"]+)"/);
   if (m && m[1] !== APP_VER && !sessionStorage.getItem("reloaded-"+m[1])) {
