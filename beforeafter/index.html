@@ -98,6 +98,16 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .legend2{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin:8px 2px 0;color:var(--sub)}
 .legend2 i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px;opacity:.75}
 @media(max-width:600px){.illus{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.illus .fut{grid-column:1/-1;border-left:0;border-top:2px dashed #e7b3a8;padding:8px 0 0}}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tag{font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px}
+.tag.alert{background:#fde3df;color:#b8321f}.tag.warn{background:#fdf0d8;color:#9a6110}.tag.ok{background:#e3f3ec;color:var(--ok)}
+.issues{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.iss{border-radius:14px;padding:12px 14px}
+.iss b{display:inline-block;font-size:13px;color:#fff;padding:2px 12px;border-radius:999px;margin-bottom:6px}
+.iss ul{margin:0;padding-left:1.1em;font-weight:700;font-size:16px;line-height:1.5}
+.iss.beauty{background:#fdeef2}.iss.beauty b{background:#e0567a}.iss.beauty li{color:#c43c62}
+.iss.health{background:#e9f3f8}.iss.health b{background:#2f7fa3}.iss.health li{color:#23688a}
+@media(max-width:600px){.issues{grid-template-columns:minmax(0,1fr)}}
 .future{background:var(--ink);color:#fff;border-radius:14px;padding:16px 18px;margin-top:14px}
 .future h4{margin:0 0 8px;font-size:18px;color:#ffb4a3}
 .future ul{margin:0;padding-left:1.2em}.future li{margin:3px 0}
@@ -314,45 +324,45 @@ const DEFS = {
 // bad:"abs" = 値の絶対値が大きいほど注意 / "low" = 値が小さいほど注意
 const RISKS = {
   "posture-side":[
-    {k:"headFwd", bad:"abs", warn:10, alert:18, title:"頭が前に出ています（ストレートネック傾向）",
+    {k:"headFwd", beauty:["二重あご・フェイスラインのたるみ","首のシワ・デコルテのくすみ"], health:["慢性的な首・肩こり","頭痛・目の疲れ"], bad:"abs", warn:10, alert:18, title:"頭が前に出ています（ストレートネック傾向）",
       risks:["首・肩のこりが慢性化しやすい","あご下に肉がつき、二重あご・フェイスラインのたるみにつながりやすい","頭の重さで背中が丸まり、猫背が進みやすい"],
       future:"首が前に出たまま固まり、二重あごや顔のたるみが目立つように"},
-    {k:"trunk", bad:"abs", warn:4, alert:8, title:"上半身が前に傾いています（猫背傾向）",
+    {k:"trunk", beauty:["ぽっこりお腹・腰回りの肉","背中・二の腕のぜい肉"], health:["呼吸が浅く代謝ダウン（痩せにくい）","肩こり・腰の重だるさ"], bad:"abs", warn:4, alert:8, title:"上半身が前に傾いています（猫背傾向）",
       risks:["呼吸が浅くなり、代謝が落ちて痩せにくくなりやすい","お腹の力が抜け、ぽっこりお腹・腰回りに肉がつきやすい","背中や二の腕に脂肪がつきやすく、老けた印象に見えやすい"],
       future:"猫背が進み、お腹や腰回りに肉がついて、痩せにくく太りやすい体に"},
-    {k:"pelvisShift", bad:"abs", warn:3, alert:6,
+    {k:"pelvisShift", beauty:v=>v>0?["下腹ぽっこり","お尻のたるみ・太もも前の張り"]:["下腹ぽっこり","太もも前の張り・脚の太見え"], health:v=>v>0?["腰への負担・腰痛","冷え・むくみ"]:["反り腰による腰痛","股関節への負担"], bad:"abs", warn:3, alert:6,
       title:v=>v>0?"骨盤が前に突き出ています（スウェイバック傾向）":"骨盤が後ろに引けています（反り腰傾向）",
       risks:v=>v>0?["下腹がぽっこり出やすい","お尻が垂れ、太ももの前側が張りやすい","腰回りが重だるくなりやすい"]:["腰が反って腰に負担がかかりやすい","下腹が前に出て、ぽっこりお腹に見えやすい","太ももの前側が張り、脚が太く見えやすい"],
       future:v=>v>0?"下腹ぽっこり・垂れ尻が定着し、パンツが似合いにくい体型に":"反り腰が進み、腰の重だるさと下腹ぽっこりが抜けにくい体に"},
-    {k:"plumb", bad:"abs", warn:3, alert:6, title:"重心線がずれています",
+    {k:"plumb", beauty:["脚のむくみ・太見え","ふくらはぎの張り"], health:["ひざ・足首への負担","疲れやすさ"], bad:"abs", warn:3, alert:6, title:"重心線がずれています",
       risks:["一部の筋肉に負担が集中し、むくみや脚の張りが出やすい","バランスを取ろうとして、他の部分もゆがみやすい"],
       future:"むくみや脚の張りが抜けにくくなり、脚が太く見える体型に"}
   ],
   "posture-front":[
-    {k:"shoulder", bad:"abs", warn:2, alert:4, title:"肩の高さに左右差があります",
+    {k:"shoulder", beauty:["顔の左右差","肩まわりのゴツさ"], health:["片側だけのしつこい肩こり","首の痛み・頭痛"], bad:"abs", warn:2, alert:4, title:"肩の高さに左右差があります",
       risks:["片側だけ肩こりがひどくなりやすい","首や顔にもゆがみが広がり、顔の左右差につながりやすい"],
       future:"片側の肩こりが慢性化し、顔の左右差まで目立つように"},
-    {k:"pelvis", bad:"abs", warn:2, alert:4, title:"骨盤が傾いています",
+    {k:"pelvis", beauty:["下半身太り・お尻の横の肉","脚の太さの左右差"], health:["腰痛・股関節の違和感","冷え・むくみ"], bad:"abs", warn:2, alert:4, title:"骨盤が傾いています",
       risks:["骨盤まわり・腰回りに脂肪がつきやすく、下半身太りにつながりやすい","脚のむくみや、左右の脚の太さの差が出やすい","腰や股関節に負担がかかりやすい"],
       future:"骨盤のゆがみが進み、下半身太り・脚の太さの左右差が目立つように"},
-    {k:"head", bad:"abs", warn:2.5, alert:5, title:"頭が傾いています",
+    {k:"head", beauty:["顔のゆがみ・たるみの左右差","首のシワ"], health:["首こり・頭の重さ","目の疲れ"], bad:"abs", warn:2.5, alert:5, title:"頭が傾いています",
       risks:["首こり・頭の重さを感じやすい","顔の左右差やたるみ方の差が出やすい"],
       future:"首のこりと顔の左右差が定着した状態に"},
-    {k:"axis", bad:"abs", warn:1.5, alert:3, title:"体の中心軸が傾いています",
+    {k:"axis", beauty:["ボディラインのゆがみ","部分太り"], health:["ひざ・腰への負担","疲れやすさ"], bad:"abs", warn:1.5, alert:3, title:"体の中心軸が傾いています",
       risks:["片側の脚に体重がかかり、骨盤のゆがみが進みやすい","姿勢のくずれが全身に広がりやすい"],
       future:"体の傾きが全身に広がり、部分的に痩せにくい体に"}
   ],
   "face-front":[
-    {k:"mouth", bad:"low", warn:.8, alert:0, title:"口角が下がり気味です",
+    {k:"mouth", beauty:["ほうれい線・マリオネットライン","不機嫌・老け見え"], health:["あご周りのこわばり","首・肩こり"], bad:"low", warn:.8, alert:0, title:"口角が下がり気味です",
       risks:["への字口になり、不機嫌・疲れた印象に見えやすい","ほうれい線・マリオネットラインが深くなりやすい"],
       future:"口角が下がり、ほうれい線やマリオネットラインが刻まれた老け見え顔に"},
-    {k:"eyeTail", bad:"low", warn:3, alert:0, title:"目尻が下がり気味です",
+    {k:"eyeTail", beauty:["目元のたるみ・疲れ顔","まぶたが重く見える"], health:["眼精疲労","頭の重さ"], bad:"low", warn:3, alert:0, title:"目尻が下がり気味です",
       risks:["疲れ顔・老け顔に見えやすい","目元のたるみ・まぶたの重さにつながりやすい"],
       future:"目尻のたるみが進み、疲れて見える目元に"},
-    {k:"eyeOpen", bad:"low", warn:8, alert:6.5, title:"目の開きが小さめです",
+    {k:"eyeOpen", beauty:["目が小さく眠そうな印象","目元のむくみ"], health:["おでこ・頭のこり","目の乾き・疲れ"], bad:"low", warn:8, alert:6.5, title:"目の開きが小さめです",
       risks:["まぶたが重く、眠そうな印象に見えやすい","目元にむくみがたまりやすい"],
       future:"まぶたが下がり、目が小さく見えるように"},
-    {always:true, title:"フェイスラインは年齢とともに下がる傾向があります",
+    {always:true, beauty:["頬とフェイスラインのもたつき","くすみ・むくみ"], health:["血流・リンパの滞り","首・肩のこりからくる顔のこわばり"], title:"フェイスラインは年齢とともに下がる傾向があります",
       risks:["筋膜や表情筋がこわばると血流が滞り、むくみ・くすみが出やすい","頬の位置が下がると、ほうれい線やフェイスラインのもたつきにつながりやすい"],
       future:"頬とフェイスラインが年々下がり、顔が大きく・四角く見えるように"}
   ]
@@ -367,9 +377,10 @@ function evalRisks(gk, m){
     else { lv = v<=r.alert?"alert":v<=r.warn?"warn":null; }
     if (!lv) return;
     const f = x => typeof x==="function" ? x(v) : x;
-    out.push({k:r.k, lv, title:f(r.title), risks:f(r.risks), future:f(r.future)});
+    const sev = r.always ? 0 : r.bad==="abs" ? Math.abs(v)/r.alert : (r.warn-v)/(r.warn-r.alert||1);
+    out.push({k:r.k, lv, sev, title:f(r.title), risks:f(r.risks), future:f(r.future), beauty:f(r.beauty)||[], health:f(r.health)||[]});
   });
-  const rank={alert:0,warn:1,info:2}; return out.sort((a,b)=>rank[a.lv]-rank[b.lv]);
+  const rank={alert:0,warn:1,info:2}; return out.sort((a,b)=>rank[a.lv]-rank[b.lv] || b.sev-a.sev);
 }
 const MM_IPD = 62;
 const EYE_L = [33,246,161,160,159,158,157,173,133,155,154,153,145,144,163,7];
@@ -881,181 +892,235 @@ function showResult(){
 }
 
 
-// ---------- イラスト：理想 / 今のあなた / このままだと ----------
-const ILL = {pink:"#ff5c7c", yellow:"#ffc23d", ink:"#5d4f55",
-  body:{ideal:"#bfd5c9", now:"#a8bed3", future:"#c99aa8"},
-  skin:{ideal:"#f8dfcb", now:"#f2d4bd", future:"#dcbf9f"}};
+// ---------- イラスト：理想 / 今のあなた / このままだと（女性シルエット・パステル） ----------
+const ILL = {pink:"#ff6f91", yellow:"#ffb43b", line:"#c7a3ad", hair:["#6e5048","#4e3631"],
+  body:{ideal:["#fde4dc","#f6c3b8"], now:["#e6e8fb","#c4cbf0"], future:["#ecd6de","#c9a4b3"]},
+  arm:{ideal:"#f6cabe", now:"#cbd1f2", future:"#cfacba"},
+  skin:{ideal:["#fff0e6","#fbd9c6"], now:["#fbe6d8","#f4cdb6"], future:["#f0d8c2","#dcbb9c"]},
+  top:{ideal:"#cfe9df", now:"#d9dcf5", future:"#d9c7cf"}};
+let ILLN = 0;
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const sg = v => v>=0 ? 1 : -1;
 const fx = n => n.toFixed(1);
-function zoneSvg(z){ return z.map(o=>`<ellipse cx="${fx(o.x)}" cy="${fx(o.y)}" rx="${o.rx}" ry="${o.ry}" fill="${o.c}" opacity="${o.o||.6}" transform="rotate(${o.r||0} ${fx(o.x)} ${fx(o.y)})"/>`).join(""); }
-// 吹き出し：右側に縦に並べて引き出し線で結ぶ
+function catmull(pts, closed=true){
+  const n=pts.length; let d=`M${fx(pts[0].x)} ${fx(pts[0].y)}`;
+  const last = closed ? n : n-1;
+  for(let i=0;i<last;i++){ const p0=pts[(i-1+n)%n], p1=pts[i], p2=pts[(i+1)%n], p3=pts[(i+2)%n];
+    d+=` C${fx(p1.x+(p2.x-p0.x)/6)} ${fx(p1.y+(p2.y-p0.y)/6)} ${fx(p2.x-(p3.x-p1.x)/6)} ${fx(p2.y-(p3.y-p1.y)/6)} ${fx(p2.x)} ${fx(p2.y)}`; }
+  return d+(closed?"Z":"");
+}
+function defs(id, grad){
+  return `<defs>
+    <linearGradient id="bd${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${grad[0]}"/><stop offset="1" stop-color="${grad[1]}"/></linearGradient>
+    <linearGradient id="hr${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${ILL.hair[0]}"/><stop offset="1" stop-color="${ILL.hair[1]}"/></linearGradient>
+    <radialGradient id="pk${id}"><stop offset="0" stop-color="${ILL.pink}" stop-opacity=".8"/><stop offset=".6" stop-color="${ILL.pink}" stop-opacity=".45"/><stop offset="1" stop-color="${ILL.pink}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="yl${id}"><stop offset="0" stop-color="${ILL.yellow}" stop-opacity=".85"/><stop offset=".6" stop-color="${ILL.yellow}" stop-opacity=".5"/><stop offset="1" stop-color="${ILL.yellow}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="bl${id}"><stop offset="0" stop-color="#ff8fa3" stop-opacity=".55"/><stop offset="1" stop-color="#ff8fa3" stop-opacity="0"/></radialGradient>
+  </defs>`;
+}
+function zoneSvg(id, z){ return z.map(o=>`<ellipse cx="${fx(o.x)}" cy="${fx(o.y)}" rx="${fx(o.rx*1.4)}" ry="${fx(o.ry*1.4)}" fill="url(#${o.c==="p"?"pk":"yl"}${id})" transform="rotate(${fx(o.r||0)} ${fx(o.x)} ${fx(o.y)})"/>`).join(""); }
+// 吹き出し（白いピル型ラベル）
 function calloutSvg(list, tx, top, bottom){
   if (!list.length) return "";
-  const s=[...list].sort((a,b)=>a.at.y-b.at.y), gap=Math.max(30,(bottom-top)/Math.max(1,s.length));
-  let y=Math.max(top, s[0].at.y-10);
-  return s.map((c,i)=>{
-    y = i ? Math.max(y+gap*.82, c.at.y) : y; if (y > bottom - (s.length-1-i)*gap*.82) y = bottom-(s.length-1-i)*gap*.82;
-    return `<path d="M${fx(c.at.x)} ${fx(c.at.y)} L${fx(tx-6)} ${fx(y-4)}" stroke="#d23c2a" stroke-width="1.3" fill="none"/>
-      <circle cx="${fx(c.at.x)}" cy="${fx(c.at.y)}" r="2.6" fill="#d23c2a"/>
-      <text x="${tx}" y="${fx(y)}" font-size="14" font-weight="700" fill="#b8321f">${c.t}</text>`;
+  const s=[...list].sort((a,b)=>a.at.y-b.at.y), step=Math.min(48, (bottom-top)/Math.max(1,s.length-1||1));
+  let y=top; const ys=[];
+  s.forEach((c,i)=>{ y = i ? Math.max(ys[i-1]+30, Math.min(c.at.y, top+i*step+20)) : Math.max(top, Math.min(c.at.y, bottom-(s.length-1)*30)); ys.push(y); });
+  const over = ys[ys.length-1]-bottom; if (over>0) for(let i=0;i<ys.length;i++) ys[i]-=over;
+  return s.map((c,i)=>{ const w=c.t.length*13.2+18, yy=ys[i];
+    return `<path d="M${fx(c.at.x)} ${fx(c.at.y)} Q${fx((c.at.x+tx)/2)} ${fx(yy)} ${fx(tx)} ${fx(yy)}" stroke="#e58b97" stroke-width="1.2" fill="none"/>
+      <circle cx="${fx(c.at.x)}" cy="${fx(c.at.y)}" r="3" fill="#fff" stroke="#e05a73" stroke-width="1.6"/>
+      <rect x="${fx(tx)}" y="${fx(yy-12)}" width="${fx(w)}" height="24" rx="12" fill="#fff" stroke="#f2b8c0"/>
+      <text x="${fx(tx+9)}" y="${fx(yy+4.5)}" font-size="13" font-weight="700" fill="#c9405b">${c.t}</text>`;
   }).join("");
 }
 
-// 側面の人型（右向き）
-function sideFigure(q, col, zones, callouts){
+// ---- 側面（右向きの女性シルエット）
+function sideFigure(q, key, zones, callouts){
+  const id=++ILLN, g=ILL.body[key];
   const r=Math.PI/180, D=a=>({x:Math.sin(a*r), y:-Math.cos(a*r)}), A=(p,v,l)=>({x:p.x+v.x*l, y:p.y+v.y*l}), L=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
-  const ank={x:92,y:408}, knee=A(ank,D(q.shin),92), hip=A(knee,D(q.thigh),98);
-  const u=D(q.torso), f={x:-u.y, y:u.x}, sh=A(hip,u,118);
-  const nv=D(q.neck), neckTop=A(A(sh,u,4),nv,24), head=A(neckTop,nv,17);
-  const P=(c,l1,l2)=>A(A(c,f,l1),u,l2||0);
-  const backHip=P(hip,-19), backSh=P(sh,-15,-2), backCtrl=P(L(hip,sh,.6),-(19+q.kyph*34));
-  const neckB=P(sh,-7,9), neckF=P(sh,8,9), chest=P(L(hip,sh,.78),20), waist=P(L(hip,sh,.36),15+q.belly*24);
-  const frontHip=P(hip,17,-4), crotch=P(hip,6,-22), buttock=P(hip,-30,-26+q.kyph*6);
-  const torso=`M${fx(backHip.x)} ${fx(backHip.y)} Q${fx(backCtrl.x)} ${fx(backCtrl.y)} ${fx(backSh.x)} ${fx(backSh.y)} Q${fx(P(sh,-12,8).x)} ${fx(P(sh,-12,8).y)} ${fx(neckB.x)} ${fx(neckB.y)} L${fx(neckF.x)} ${fx(neckF.y)} Q${fx(P(sh,21,2).x)} ${fx(P(sh,21,2).y)} ${fx(chest.x)} ${fx(chest.y)} Q${fx(P(L(hip,sh,.6),20+q.belly*18).x)} ${fx(P(L(hip,sh,.6),20+q.belly*18).y)} ${fx(waist.x)} ${fx(waist.y)} Q${fx(P(L(hip,sh,.12),21+q.belly*14).x)} ${fx(P(L(hip,sh,.12),21+q.belly*14).y)} ${fx(frontHip.x)} ${fx(frontHip.y)} L${fx(crotch.x)} ${fx(crotch.y)} Q${fx(buttock.x)} ${fx(buttock.y)} ${fx(backHip.x)} ${fx(backHip.y)}Z`;
-  const armA=q.kyph*16+q.torso*.4, sj=P(sh,-1+q.kyph*9,-7);
-  const elbow=A(sj,{x:Math.sin(armA*r), y:Math.cos(armA*r)},54), hand=A(elbow,{x:Math.sin((armA+10)*r), y:Math.cos((armA+10)*r)},48);
-  const seg=(a,b,w)=>`<path d="M${fx(a.x)} ${fx(a.y)} L${fx(b.x)} ${fx(b.y)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/><path d="M${fx(a.x)} ${fx(a.y)} L${fx(b.x)} ${fx(b.y)}" stroke="${ILL.ink}" stroke-opacity=".12" stroke-width="${w}" stroke-linecap="round" fill="none"/>`;
+  const N=v=>({x:-v.y, y:v.x});
+  const ank={x:92,y:404}, sV=D(q.shin), knee=A(ank,sV,94), tV=D(q.thigh), hip=A(knee,tV,98);
+  const u=D(q.torso), f=N(u), sh=A(hip,u,112), fS=N(sV), fT=N(tV);
+  const nv=D(q.neck), nf=N(nv), neckTop=A(A(sh,u,6),nv,22);
+  const P=(c,l1,l2)=>A(A(c,f,l1),u,l2||0), sag=q.sag||0, lord=q.lord||0;
+  const pts=[
+    A(neckTop,nf,6), A(A(sh,u,8),f,7), P(sh,12,0),
+    P(L(hip,sh,.7-q.kyph*.05),22-q.kyph*2), P(L(hip,sh,.57),13+q.belly*9), P(L(hip,sh,.38),11+q.belly*21), P(L(hip,sh,.16),13+q.belly*17),
+    P(hip,13,-4), A(L(hip,knee,.35),fT,13), A(knee,fS,8.5), A(L(knee,ank,.45),fS,6.5), A(ank,fS,4.5),
+    {x:ank.x+24,y:ank.y+10}, {x:ank.x+20,y:ank.y+13}, {x:ank.x-7,y:ank.y+13},
+    {x:ank.x-8,y:ank.y+4}, A(L(knee,ank,.8),fS,-5.5), A(L(knee,ank,.33),fS,-11.5), A(knee,fS,-8.5),
+    A(L(hip,knee,.45),fT,-12.5), A(A(hip,f,-17),u,-21-sag*7), P(hip,-26+sag*1,-6-sag*7),
+    P(L(hip,sh,.38),-10.5+lord*5), P(L(hip,sh,.74),-14-q.kyph*26), P(sh,-10,5), A(A(sh,u,10),f,-5.5), A(neckTop,nf,-6)
+  ];
+  const body=catmull(pts);
+  // 腕
+  const armA=q.kyph*16+q.torso*.4, sj=P(sh,-1+q.kyph*9,-6);
+  const elbow=A(sj,{x:Math.sin(armA*r), y:Math.cos(armA*r)},52), wrist=A(elbow,{x:Math.sin((armA+10)*r), y:Math.cos((armA+10)*r)},46);
+  const ac=ILL.arm[key];
+  const arm=`<path d="M${fx(sj.x)} ${fx(sj.y)} L${fx(elbow.x)} ${fx(elbow.y)}" stroke="${ac}" stroke-width="12" stroke-linecap="round"/><path d="M${fx(elbow.x)} ${fx(elbow.y)} L${fx(wrist.x)} ${fx(wrist.y)}" stroke="${ac}" stroke-width="9" stroke-linecap="round"/><ellipse cx="${fx(wrist.x)}" cy="${fx(wrist.y+5)}" rx="5" ry="7" fill="${ac}"/>`;
+  // 頭（横顔＋まとめ髪）
+  const hf=D(q.neck+90), hu=nv, head=A(A(neckTop,nv,17),hf,3), H=(a,b)=>({x:head.x+hf.x*a+hu.x*b, y:head.y+hf.y*a+hu.y*b});
+  const face=catmull([H(-17,4),H(-14,16),H(0,22),H(13,17),H(19,6),H(20,0),H(23,-3),H(19,-6),H(18,-12),H(12,-19),H(0,-22),H(-13,-17)]);
+  const hair=catmull([H(15,10),H(6,22),H(-8,22),H(-19,10),H(-20,-6),H(-13,-16),H(-4,-12),H(-2,2),H(6,6),H(14,4)]);
+  const bun=H(-19,15);
+  const eye=H(12,1), lash=`<path d="M${fx(H(9,2).x)} ${fx(H(9,2).y)} Q${fx(H(12,4).x)} ${fx(H(12,4).y)} ${fx(H(15,2).x)} ${fx(H(15,2).y)}" stroke="#4e3631" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  const sk=ILL.skin[key];
   const Z={
-    neck:{...L(sh,neckTop,.3), rx:11, ry:17, c:ILL.pink},
-    upper:{...P(L(hip,sh,.8),-12-q.kyph*12), rx:13, ry:22, c:ILL.pink},
-    low:{...P(L(hip,sh,.22),-17), rx:12, ry:18, c:ILL.pink},
-    belly:{...P(L(hip,sh,.34),11+q.belly*17), rx:15+q.belly*6, ry:23, c:ILL.yellow},
-    arm:{...A(L(sj,elbow,.5),f,-5), rx:7, ry:20, c:ILL.yellow, r:-armA},
-    butt:{...P(hip,-26,-12), rx:15, ry:17, c:ILL.yellow},
-    thigh:{...A(L(hip,knee,.4),f,8), rx:10, ry:24, c:ILL.yellow, r:q.thigh}
+    neck:{...L(sh,neckTop,.35), rx:10, ry:14, c:"p"},
+    upper:{...P(L(hip,sh,.78),-11-q.kyph*12), rx:12, ry:20, c:"p"},
+    low:{...P(L(hip,sh,.24),-12), rx:11, ry:16, c:"p"},
+    belly:{...P(L(hip,sh,.3),8+q.belly*16), rx:13+q.belly*5, ry:20, c:"y"},
+    arm:{...L(sj,elbow,.5), rx:7, ry:18, c:"y", r:-armA},
+    butt:{...P(hip,-22,-12-sag*5), rx:13, ry:15, c:"y"},
+    thigh:{...A(L(hip,knee,.4),fT,6), rx:9, ry:22, c:"y", r:q.thigh}
   };
-  const bk={x:.25*backHip.x+.5*backCtrl.x+.25*backSh.x, y:.25*backHip.y+.5*backCtrl.y+.25*backSh.y}, pts={head, neck:Z.neck, upper:Z.upper, low:Z.low, belly:Z.belly, arm:Z.arm, butt:Z.butt, thigh:Z.thigh, back:bk};
+  const bk=pts[23];
+  const at={head:H(6,24), neck:Z.neck, upper:Z.upper, low:Z.low, belly:Z.belly, arm:Z.arm, butt:Z.butt, thigh:Z.thigh, back:bk};
   const W = callouts ? 352 : 200;
-  return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">
-    <line x1="${ank.x}" y1="425" x2="${ank.x}" y2="14" stroke="#9a8f88" stroke-width="1.2" stroke-dasharray="5 5"/>
-    <ellipse cx="${ank.x+6}" cy="424" rx="46" ry="6" fill="#000" opacity=".07"/>
-    ${seg(hip,knee,31)}${seg(knee,ank,22)}
-    <ellipse cx="${fx(ank.x+11)}" cy="${fx(ank.y+11)}" rx="19" ry="7" fill="${col}"/>
-    <path d="${torso}" fill="${col}" stroke="${ILL.ink}" stroke-opacity=".35" stroke-width="1.2"/>
-    ${seg(A(sh,u,2),neckTop,17)}
-    <circle cx="${fx(head.x)}" cy="${fx(head.y)}" r="21" fill="${col}" stroke="${ILL.ink}" stroke-opacity=".35" stroke-width="1.2"/>
-    <circle cx="${fx(head.x+A({x:0,y:0},D(q.neck+90),19).x)}" cy="${fx(head.y+A({x:0,y:0},D(q.neck+90),19).y+2)}" r="3.4" fill="${col}" stroke="${ILL.ink}" stroke-opacity=".35"/>
-    ${zoneSvg((zones||[]).map(k=>Z[k]).filter(Boolean))}
-    ${seg(sj,elbow,15)}${seg(elbow,hand,13)}
-    ${zones&&zones.includes("arm")?zoneSvg([Z.arm]):""}
-    ${callouts?calloutSvg(callouts.map(c=>({t:c.t, at:pts[c.k]})), 196, 40, 400):""}
+  return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,g)}
+    <line x1="${ank.x}" y1="424" x2="${ank.x}" y2="12" stroke="#d6c4c4" stroke-width="1.2" stroke-dasharray="4 5"/>
+    <ellipse cx="${ank.x+6}" cy="420" rx="44" ry="5" fill="#c9a9b1" opacity=".22"/>
+    <path d="${body}" fill="url(#bd${id})" stroke="${ILL.line}" stroke-width="1.2"/>
+    ${zoneSvg(id,(zones||[]).filter(k=>k!=="arm").map(k=>Z[k]).filter(Boolean))}
+    <circle cx="${fx(bun.x)}" cy="${fx(bun.y)}" r="10" fill="url(#hr${id})"/>
+    <path d="${face}" fill="${sk[0]}" stroke="${ILL.line}" stroke-width="1.1"/>
+    <path d="${hair}" fill="url(#hr${id})"/>
+    ${lash}<circle cx="${fx(H(5,-6).x)}" cy="${fx(H(5,-6).y)}" r="4" fill="url(#bl${id})"/>
+    ${arm}
+    ${zones&&zones.includes("arm")?zoneSvg(id,[Z.arm]):""}
+    ${callouts?calloutSvg(callouts.map(c=>({t:c.t, at:at[c.k]})), 196, 30, 410):""}
   </svg>`;
 }
 
-// 正面の人型
-function frontFigure(q, col, zones, callouts){
-  const r=Math.PI/180;
+// ---- 正面（女性シルエット）
+function frontFigure(q, key, zones, callouts){
+  const id=++ILLN, g=ILL.body[key], r=Math.PI/180;
   const R=(c,half,ang)=>{const dx=Math.cos(ang*r)*half, dy=Math.sin(ang*r)*half; return [{x:c.x-dx,y:c.y-dy},{x:c.x+dx,y:c.y+dy}];};
-  const pc={x:100,y:236}, sc={x:100+Math.tan(q.axis*r)*124, y:112};
-  const [hl,hr]=R(pc,33*(1+q.hipW*.22),q.rp), [jl,jr]=R(pc,19,q.rp), [sl,sr]=R(sc,45,q.rs);
-  const wl={x:(sl.x+hl.x)/2+9-q.belly*7, y:(sl.y+hl.y)/2+8}, wr={x:(sr.x+hr.x)/2-9+q.belly*7, y:(sr.y+hr.y)/2+8};
-  const nb={x:sc.x, y:sc.y-8};
-  const torso=`M${fx(sl.x)} ${fx(sl.y)} Q${fx(wl.x)} ${fx(wl.y)} ${fx(hl.x)} ${fx(hl.y)} L${fx(jl.x)} ${fx(jl.y+18)} L${fx(jr.x)} ${fx(jr.y+18)} L${fx(hr.x)} ${fx(hr.y)} Q${fx(wr.x)} ${fx(wr.y)} ${fx(sr.x)} ${fx(sr.y)} Q${fx(sc.x+20)} ${fx(sc.y-12)} ${fx(nb.x)} ${fx(nb.y)} Q${fx(sc.x-20)} ${fx(sc.y-12)} ${fx(sl.x)} ${fx(sl.y)}Z`;
-  const leg=(j,side)=>{ const kn={x:j.x+side*(2+q.oleg*11), y:326}, an={x:100+side*15, y:408}; return {kn,an}; };
-  const lL=leg(jl,-1), lR=leg(jr,1);
-  const seg=(a,b,w)=>`<path d="M${fx(a.x)} ${fx(a.y)} L${fx(b.x)} ${fx(b.y)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/><path d="M${fx(a.x)} ${fx(a.y)} L${fx(b.x)} ${fx(b.y)}" stroke="${ILL.ink}" stroke-opacity=".12" stroke-width="${w}" stroke-linecap="round" fill="none"/>`;
-  const tw=27*(1+q.hipW*.3);
-  const arm=(s,side)=>{ const e={x:s.x+side*7, y:s.y+58}, h={x:e.x+side*2, y:e.y+52}; return seg(s,e,14)+seg(e,h,12); };
-  const nt={x:sc.x+Math.sin(q.rh*r)*4, y:sc.y-24};
-  const hc={x:nt.x+Math.sin(q.rh*r)*24, y:nt.y-Math.cos(q.rh*r)*24};
+  const L=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}), ad=(p,x,y)=>({x:p.x+x,y:p.y+y});
+  const pc={x:100,y:232}, sc={x:100+Math.tan(q.axis*r)*120, y:112};
+  const [hl,hr]=R(pc,31*(1+q.hipW*.2),q.rp), [jl,jr]=R(pc,17,q.rp), [sl,sr]=R(sc,38,q.rs);
+  const kl={x:jl.x-q.oleg*10+3, y:322}, kr={x:jr.x+q.oleg*10-3, y:322}, al={x:86,y:404}, ar={x:114,y:404};
+  const tw=1+q.hipW*.35, bw=q.belly*8;
+  const nt={x:sc.x+Math.sin(q.rh*r)*3, y:sc.y-20};
+  const side=(s, sh, hp, jn, kn, an)=>[ // s=+1 右 / -1 左（外側の輪郭、上から下）
+    {x:nt.x+s*7, y:nt.y+6}, {x:sc.x+s*9, y:sc.y-5}, ad(L({x:sc.x+s*9,y:sc.y-5},sh,.6),0,-2), ad(sh,s*1,3),
+    ad(L(sh,hp,.2),-s*5,0), ad(L(sh,hp,.36),-s*3,0), ad(L(sh,hp,.62),-s*(11-bw),0), ad(hp,s*4,8),
+    ad(L(jn,kn,.32),s*15*tw,0), ad(kn,s*9,0), ad(L(kn,an,.33),s*9.5,0), ad(an,s*5,0), ad(an,s*8,11), ad(an,s*1,14)];
+  const inner=(s, jn, kn, an)=>[ad(an,-s*5,11), ad(an,-s*4.5,0), ad(L(kn,an,.33),-s*7.5,0), ad(kn,-s*7,0), ad(L(jn,kn,.4),-s*9*tw,0)];
+  const crotch={x:(jl.x+jr.x)/2, y:(jl.y+jr.y)/2+24};
+  const Rt=side(1,sr,hr,jr,kr,ar), Lt=side(-1,sl,hl,jl,kl,al);
+  const pts=[...Rt, ...inner(1,jr,kr,ar), crotch, ...inner(-1,jl,kl,al).reverse(), ...Lt.reverse()];
+  const body=catmull(pts);
+  const ac=ILL.arm[key];
+  const arm=(s,sh)=>{ const a=ad(sh,s*3,6), e=ad(sh,s*11,60), w=ad(sh,s*13,108); return `<path d="M${fx(a.x)} ${fx(a.y)} L${fx(e.x)} ${fx(e.y)}" stroke="${ac}" stroke-width="11" stroke-linecap="round"/><path d="M${fx(e.x)} ${fx(e.y)} L${fx(w.x)} ${fx(w.y)}" stroke="${ac}" stroke-width="8.5" stroke-linecap="round"/><ellipse cx="${fx(w.x)}" cy="${fx(w.y+6)}" rx="5" ry="7.5" fill="${ac}"/>`; };
+  const hc={x:nt.x+Math.sin(q.rh*r)*20, y:nt.y-Math.cos(q.rh*r)*20};
+  const sk=ILL.skin[key];
+  const hairBack=catmull([{x:-21,y:-10},{x:-24,y:22},{x:-26,y:48},{x:-12,y:56},{x:12,y:56},{x:26,y:48},{x:24,y:22},{x:21,y:-10},{x:0,y:-27}].map(p=>({x:hc.x+p.x,y:hc.y+p.y})));
+  const bangs=catmull([{x:-18,y:-2},{x:-15,y:-18},{x:0,y:-25},{x:16,y:-19},{x:19,y:-2},{x:10,y:-12},{x:-4,y:-9},{x:-12,y:-7}].map(p=>({x:hc.x+p.x,y:hc.y+p.y})));
   const raised = q.rs>=0 ? sl : sr, lowHip = q.rp>=0 ? hr : hl;
-  const sp={x:(sc.x+pc.x)/2-q.curve*18, y:(sc.y+pc.y)/2};
+  const sp={x:(sc.x+pc.x)/2-q.curve*16, y:(sc.y+pc.y)/2};
   const Z={
-    neck:{x:nt.x, y:nt.y+8, rx:10, ry:12, c:ILL.pink},
-    shoulder:{x:raised.x+(raised===sl?8:-8), y:raised.y+4, rx:16, ry:11, c:ILL.pink, r:q.rs},
-    low:{x:lowHip.x+(lowHip===hl?10:-10), y:lowHip.y-22, rx:9, ry:16, c:ILL.pink},
-    belly:{x:pc.x, y:pc.y-14, rx:22+q.belly*6, ry:14, c:ILL.yellow},
-    hipL:{x:hl.x+3, y:hl.y+16, rx:10+q.hipW*4, ry:20, c:ILL.yellow}, hipR:{x:hr.x-3, y:hr.y+16, rx:10+q.hipW*4, ry:20, c:ILL.yellow},
-    thighL:{x:(jl.x+lL.kn.x)/2-6, y:285, rx:9, ry:22, c:ILL.yellow}, thighR:{x:(jr.x+lR.kn.x)/2+6, y:285, rx:9, ry:22, c:ILL.yellow}
+    neck:{x:nt.x, y:nt.y+10, rx:9, ry:10, c:"p"},
+    shoulder:{x:raised.x+(raised===sl?7:-7), y:raised.y+5, rx:14, ry:10, c:"p", r:q.rs},
+    low:{x:lowHip.x+(lowHip===hl?9:-9), y:lowHip.y-20, rx:8, ry:14, c:"p"},
+    belly:{x:pc.x, y:pc.y-12, rx:18+q.belly*5, ry:12, c:"y"},
+    hipL:{x:hl.x+2, y:hl.y+16, rx:9+q.hipW*4, ry:18, c:"y"}, hipR:{x:hr.x-2, y:hr.y+16, rx:9+q.hipW*4, ry:18, c:"y"},
+    thighL:{x:L(jl,kl,.45).x-5, y:282, rx:8, ry:20, c:"y"}, thighR:{x:L(jr,kr,.45).x+5, y:282, rx:8, ry:20, c:"y"}
   };
-  const pts={shoulder:Z.shoulder, neck:Z.neck, spine:sp, pelvis:{x:pc.x,y:pc.y}, hip:Z.hipR, knee:lR.kn, head:hc, belly:Z.belly};
+  const at={shoulder:Z.shoulder, neck:Z.neck, spine:sp, belly:Z.belly, hip:Z.hipR, knee:ad(kr,8,0), head:ad(hc,0,-12)};
   const W = callouts ? 352 : 200;
-  return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">
-    <line x1="100" y1="425" x2="100" y2="14" stroke="#9a8f88" stroke-width="1.2" stroke-dasharray="5 5"/>
-    <line x1="34" y1="${fx(sc.y)}" x2="166" y2="${fx(sc.y)}" stroke="#9a8f88" stroke-width="1" stroke-dasharray="3 4"/>
-    <line x1="44" y1="${fx(pc.y)}" x2="156" y2="${fx(pc.y)}" stroke="#9a8f88" stroke-width="1" stroke-dasharray="3 4"/>
-    <ellipse cx="100" cy="424" rx="52" ry="6" fill="#000" opacity=".07"/>
-    ${seg(jl,lL.kn,tw)}${seg(lL.kn,lL.an,20)}${seg(jr,lR.kn,tw)}${seg(lR.kn,lR.an,20)}
-    <ellipse cx="${fx(lL.an.x-6)}" cy="${fx(lL.an.y+11)}" rx="12" ry="6" fill="${col}"/><ellipse cx="${fx(lR.an.x+6)}" cy="${fx(lR.an.y+11)}" rx="12" ry="6" fill="${col}"/>
-    <path d="${torso}" fill="${col}" stroke="${ILL.ink}" stroke-opacity=".35" stroke-width="1.2"/>
-    <path d="M${fx(pc.x)} ${fx(pc.y)} Q${fx(sp.x)} ${fx(sp.y)} ${fx(sc.x)} ${fx(sc.y)}" stroke="${ILL.ink}" stroke-opacity=".45" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
-    ${arm(sl,-1)}${arm(sr,1)}
-    ${seg({x:sc.x,y:sc.y-4},nt,18)}
-    <ellipse cx="${fx(hc.x)}" cy="${fx(hc.y)}" rx="19" ry="24" fill="${col}" stroke="${ILL.ink}" stroke-opacity=".35" stroke-width="1.2" transform="rotate(${fx(q.rh)} ${fx(hc.x)} ${fx(hc.y)})"/>
-    ${zoneSvg((zones||[]).map(k=>Z[k]).filter(Boolean))}
-    ${callouts?calloutSvg(callouts.map(c=>({t:c.t, at:pts[c.k]})), 196, 40, 400):""}
+  return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,g)}
+    <line x1="100" y1="424" x2="100" y2="12" stroke="#d6c4c4" stroke-width="1.2" stroke-dasharray="4 5"/>
+    <line x1="40" y1="${fx(sc.y)}" x2="160" y2="${fx(sc.y)}" stroke="#d6c4c4" stroke-width="1" stroke-dasharray="3 4"/>
+    <line x1="46" y1="${fx(pc.y)}" x2="154" y2="${fx(pc.y)}" stroke="#d6c4c4" stroke-width="1" stroke-dasharray="3 4"/>
+    <ellipse cx="100" cy="420" rx="48" ry="5" fill="#c9a9b1" opacity=".22"/>
+    <path d="${hairBack}" fill="url(#hr${id})"/>
+    ${arm(-1,sl)}${arm(1,sr)}
+    <path d="${body}" fill="url(#bd${id})" stroke="${ILL.line}" stroke-width="1.2"/>
+    <path d="M${fx(pc.x)} ${fx(pc.y-6)} Q${fx(sp.x)} ${fx(sp.y)} ${fx(sc.x)} ${fx(sc.y+4)}" stroke="#b98a98" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="3 4" fill="none"/>
+    ${zoneSvg(id,(zones||[]).map(k=>Z[k]).filter(Boolean))}
+    <g transform="rotate(${fx(q.rh)} ${fx(hc.x)} ${fx(hc.y)})">
+      <ellipse cx="${fx(hc.x)}" cy="${fx(hc.y)}" rx="16" ry="20" fill="${sk[0]}" stroke="${ILL.line}" stroke-width="1"/>
+      <path d="${bangs}" fill="url(#hr${id})"/>
+      <path d="M${fx(hc.x-9)} ${fx(hc.y+1)} q3 2 6 0 M${fx(hc.x+3)} ${fx(hc.y+1)} q3 2 6 0" stroke="#4e3631" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <circle cx="${fx(hc.x-9)}" cy="${fx(hc.y+7)}" r="4" fill="url(#bl${id})"/><circle cx="${fx(hc.x+9)}" cy="${fx(hc.y+7)}" r="4" fill="url(#bl${id})"/>
+      <path d="M${fx(hc.x-3)} ${fx(hc.y+12)} q3 2 6 0" stroke="#e07a86" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </g>
+    ${callouts?calloutSvg(callouts.map(c=>({t:c.t, at:at[c.k]})), 192, 30, 400):""}
   </svg>`;
 }
 
-// 顔のイラスト
-function catmull(pts){ // 閉じた滑らかな曲線
-  const n=pts.length; let d=`M${fx(pts[0].x)} ${fx(pts[0].y)}`;
-  for(let i=0;i<n;i++){ const p0=pts[(i-1+n)%n], p1=pts[i], p2=pts[(i+1)%n], p3=pts[(i+2)%n];
-    d+=` C${fx(p1.x+(p2.x-p0.x)/6)} ${fx(p1.y+(p2.y-p0.y)/6)} ${fx(p2.x-(p3.x-p1.x)/6)} ${fx(p2.y-(p3.y-p1.y)/6)} ${fx(p2.x)} ${fx(p2.y)}`; }
-  return d+"Z";
-}
-function faceFigure(q, skin, zones, callouts){
-  const cx=110, s=q.sag;
-  const half=[{x:110,y:30},{x:158,y:44},{x:177,y:88},{x:178,y:128},{x:170+s*10,y:166+s*13},{x:152+s*9,y:199+s*12},{x:128,y:219+s*7}];
-  const right=half, left=half.slice(1,-1).reverse().map(p=>({x:2*cx-p.x,y:p.y}));
-  const outline=catmull([...right, {x:110,y:224+s*8}, ...left.slice(0)].filter((p,i,a)=>i===0||p.x!==a[i-1].x||p.y!==a[i-1].y));
-  const eye=(ex,side)=>{ const inn={x:ex-side*14,y:112}, out={x:ex+side*15,y:110+q.eye*8}, h=9-q.eye*2.5;
-    return `<path d="M${inn.x} ${inn.y} Q${ex} ${112-h*1.5} ${out.x} ${fx(out.y)} Q${ex} ${112+h*.9} ${inn.x} ${inn.y}Z" fill="#fff" stroke="#4a3a35" stroke-width="1.8"/>
-      <circle cx="${ex+side*1}" cy="${fx(112+q.eye*1.5)}" r="${fx(5.2-q.eye*.8)}" fill="#3b2c28"/>
-      <path d="M${ex-side*16} ${fx(94+q.eye*3)} Q${ex} ${fx(88+q.eye*2)} ${ex+side*17} ${fx(94+q.eye*7)}" stroke="#6b5048" stroke-width="3" fill="none" stroke-linecap="round"/>`; };
-  const my=172, md=q.mouth*13;
-  const mouth=`<path d="M90 ${fx(my+md)} Q100 ${fx(my-4+md*.2)} 110 ${my-2} Q120 ${fx(my-4+md*.2)} 130 ${fx(my+md)} Q110 ${fx(my+10)} 90 ${fx(my+md)}Z" fill="#d78a87" stroke="#b9706c" stroke-width="1"/>`;
-  const naso=`<path d="M93 146 Q${fx(80-s*4)} ${fx(160+s*4)} ${fx(86-s*3)} ${fx(180+s*10)}" stroke="#a7795f" stroke-opacity="${fx(s*.85)}" stroke-width="${fx(1.5+s*1.5)}" fill="none" stroke-linecap="round"/><path d="M127 146 Q${fx(140+s*4)} ${fx(160+s*4)} ${fx(134+s*3)} ${fx(180+s*10)}" stroke="#a7795f" stroke-opacity="${fx(s*.85)}" stroke-width="${fx(1.5+s*1.5)}" fill="none" stroke-linecap="round"/>`;
-  const mario=s>.3?`<path d="M92 ${fx(my+md+2)} Q90 ${fx(my+md+12)} ${fx(94-s*3)} ${fx(my+md+24)}" stroke="#a7795f" stroke-opacity="${fx(s*.6)}" stroke-width="2" fill="none"/><path d="M128 ${fx(my+md+2)} Q130 ${fx(my+md+12)} ${fx(126+s*3)} ${fx(my+md+24)}" stroke="#a7795f" stroke-opacity="${fx(s*.6)}" stroke-width="2" fill="none"/>`:"";
-  const chin=q.chin>.2?`<path d="M86 ${fx(230+s*8)} Q110 ${fx(248+s*10)} 134 ${fx(230+s*8)}" stroke="#a7795f" stroke-opacity="${fx(q.chin*.6)}" stroke-width="2.4" fill="none"/>`:"";
-  const blush=[78,142].map(x=>`<ellipse cx="${x}" cy="${fx(140+q.cheek*16)}" rx="15" ry="9" fill="#f08c8c" opacity="${fx(.32-q.cheek*.12)}"/>`).join("");
+// ---- 顔（バストアップのイラスト）
+function faceFigure(q, key, zones, callouts){
+  const id=++ILLN, sk=ILL.skin[key], s=q.sag, cx=110;
+  const half=[{x:110,y:44},{x:148,y:54},{x:166,y:88},{x:168,y:124},{x:161+s*9,y:158+s*12},{x:146+s*9,y:188+s*12},{x:126,y:206+s*7}];
+  const outline=catmull([...half, {x:110,y:211+s*8}, ...half.slice(1).reverse().map(p=>({x:2*cx-p.x,y:p.y}))]);
+  const eye=(ex,sd)=>{ const ey=124, inn={x:ex-sd*15,y:ey+1}, out={x:ex+sd*16,y:ey-1+q.eye*8}, h=11-q.eye*3.5;
+    return `<path d="M${inn.x} ${inn.y} Q${ex} ${fx(ey-h*1.25)} ${fx(out.x)} ${fx(out.y)} Q${ex} ${fx(ey+h*.85)} ${inn.x} ${inn.y}Z" fill="#fff"/>
+      <circle cx="${ex+sd*1.5}" cy="${fx(ey+.5+q.eye*1.5)}" r="${fx(7.3-q.eye*1.3)}" fill="#6b4a3a"/><circle cx="${ex+sd*1.5}" cy="${fx(ey+.5+q.eye*1.5)}" r="${fx(3.6-q.eye*.6)}" fill="#2e1f1a"/>
+      <circle cx="${ex+sd*1.5+2.5}" cy="${fx(ey-2.5+q.eye*1.5)}" r="2" fill="#fff"/>
+      <path d="M${inn.x} ${inn.y} Q${ex} ${fx(ey-h*1.25)} ${fx(out.x)} ${fx(out.y)} l${sd*5} ${fx(-4+q.eye*5)}" stroke="#3a2723" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M${fx(out.x-sd*4)} ${fx(out.y-3)} l${sd*4} -4" stroke="#3a2723" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M${fx(inn.x+sd*3)} ${fx(ey+h*.55)} Q${ex} ${fx(ey+h*.95)} ${fx(out.x-sd*2)} ${fx(out.y+1)}" stroke="#c99a8a" stroke-width="1" fill="none"/>
+      ${s>.3?`<path d="M${fx(inn.x+sd*4)} ${fx(ey+h+4)} Q${ex} ${fx(ey+h+9+s*3)} ${fx(out.x-sd*3)} ${fx(out.y+h*.6+3)}" stroke="#b58b74" stroke-opacity="${fx(s*.5)}" stroke-width="1.6" fill="none"/>`:""}
+      <path d="M${ex-sd*15} ${fx(101+q.eye*3)} Q${ex} ${fx(94+q.eye*2)} ${ex+sd*17} ${fx(101+q.eye*7)}" stroke="#7a5a50" stroke-width="3" fill="none" stroke-linecap="round"/>`; };
+  const my=176, md=q.mouth*12;
+  const lips=`<path d="M93 ${fx(my+md)} Q101 ${fx(my-5+md*.2)} 110 ${my-2} Q119 ${fx(my-5+md*.2)} 127 ${fx(my+md)} Q118 ${fx(my+2+md*.5)} 110 ${fx(my+1)} Q102 ${fx(my+2+md*.5)} 93 ${fx(my+md)}Z" fill="#ec7c8a"/>
+    <path d="M93 ${fx(my+md)} Q110 ${fx(my+13+md*.2)} 127 ${fx(my+md)} Q110 ${fx(my+2+md*.4)} 93 ${fx(my+md)}Z" fill="#f2909c"/>
+    <ellipse cx="114" cy="${fx(my+6+md*.3)}" rx="4" ry="1.6" fill="#fff" opacity=".6"/>`;
+  const fold=(o)=>`stroke="#b58b74" stroke-opacity="${fx(o)}" stroke-width="1.8" fill="none" stroke-linecap="round"`;
+  const naso=s>.25?`<path d="M95 148 Q${fx(83-s*4)} ${fx(162+s*4)} ${fx(89-s*3)} ${fx(182+s*9)}" ${fold(s*.7)}/><path d="M125 148 Q${fx(137+s*4)} ${fx(162+s*4)} ${fx(131+s*3)} ${fx(182+s*9)}" ${fold(s*.7)}/>`:"";
+  const mario=s>.4?`<path d="M93 ${fx(my+md+3)} q-1 10 ${fx(2-s*3)} ${fx(20)}" ${fold(s*.5)}/><path d="M127 ${fx(my+md+3)} q1 10 ${fx(-2+s*3)} ${fx(20)}" ${fold(s*.5)}/>`:"";
+  const chin=q.chin>.2?`<path d="M88 ${fx(218+s*8)} Q110 ${fx(234+s*9)} 132 ${fx(218+s*8)}" ${fold(q.chin*.55)}/>`:"";
+  const blush=[80,140].map(x=>`<ellipse cx="${x}" cy="${fx(146+q.cheek*14)}" rx="17" ry="11" fill="url(#bl${id})" opacity="${fx(1-q.cheek*.45)}"/>`).join("");
+  const vol=1-s*.25;
+  const hairBack=`<path d="M44 ${fx(120)} Q${fx(40)} ${fx(40-vol*8)} 110 ${fx(30-vol*6)} Q${fx(180)} ${fx(40-vol*8)} 176 120 Q186 200 182 268 L38 268 Q34 200 44 120Z" fill="url(#hr${id})"/>`;
+  const bangs=`<path d="M50 ${fx(118)} Q48 ${fx(46-vol*6)} 112 ${fx(38-vol*6)} Q172 ${fx(44-vol*6)} 170 116 Q160 78 132 70 Q118 92 84 92 Q72 98 62 118 Q58 104 50 118Z" fill="url(#hr${id})"/>`;
   const Z={
-    jowl:{x:154+s*9, y:190+s*12, rx:13, ry:15, c:ILL.yellow}, jowlL:{x:66-s*9, y:190+s*12, rx:13, ry:15, c:ILL.yellow},
-    chin:{x:110, y:236+s*8, rx:24, ry:9, c:ILL.yellow},
-    jaw:{x:166, y:150, rx:8, ry:14, c:ILL.pink}, jawL:{x:54, y:150, rx:8, ry:14, c:ILL.pink}
+    jowl:{x:150+s*9, y:186+s*12, rx:12, ry:13, c:"y"}, jowlL:{x:70-s*9, y:186+s*12, rx:12, ry:13, c:"y"},
+    chin:{x:110, y:222+s*8, rx:22, ry:8, c:"y"}, jaw:{x:160, y:150, rx:8, ry:13, c:"p"}, jawL:{x:60, y:150, rx:8, ry:13, c:"p"}
   };
-  const pts={eye:{x:124,y:110+q.eye*7}, cheek:{x:142,y:140+q.cheek*16}, naso:{x:136+s*3,y:168+s*6}, mouth:{x:128,y:my+md}, jowl:Z.jowl, chin:Z.chin, skin:{x:150,y:80}};
+  const at={eye:{x:131,y:123+q.eye*7}, cheek:{x:142,y:146+q.cheek*14}, naso:{x:134+s*3,y:168+s*6}, mouth:{x:127,y:my+md}, jowl:Z.jowl, chin:Z.chin, skin:{x:150,y:88}};
   const W = callouts ? 360 : 220;
-  return `<svg viewBox="0 0 ${W} 280" xmlns="http://www.w3.org/2000/svg" role="img">
-    <path d="M84 ${fx(205+s*6)} L82 274 L138 274 L136 ${fx(205+s*6)}Z" fill="${skin}"/>
-    <path d="${outline}" fill="${skin}" stroke="#8e6f5e" stroke-width="1.6"/>
-    <path d="M46 104 Q44 22 110 18 Q176 22 174 104 Q166 54 112 50 Q66 52 46 104Z" fill="#5a4640"/>
+  return `<svg viewBox="0 0 ${W} 270" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,sk)}
+    ${hairBack}
+    <path d="M30 270 Q36 232 80 222 L140 222 Q184 232 190 270Z" fill="${ILL.top[key]}"/>
+    <path d="M94 ${fx(192+s*6)} L92 226 Q110 236 128 226 L126 ${fx(192+s*6)}Z" fill="${sk[1]}"/>
+    <path d="${outline}" fill="url(#bd${id})" stroke="#d9a993" stroke-width="1.2"/>
     ${blush}${naso}${mario}${chin}
-    ${eye(84,-1)}${eye(136,1)}
-    <path d="M110 120 L105 145 Q110 150 115 145" stroke="#a7795f" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-    ${mouth}
-    ${zoneSvg((zones||[]).map(k=>Z[k]).filter(Boolean))}
-    ${callouts?calloutSvg(callouts.map(c=>({t:c.t, at:pts[c.k]})), 206, 40, 262):""}
+    ${eye(86,-1)}${eye(134,1)}
+    <path d="M111 128 Q108 146 106 150 Q110 154 115 151" stroke="#d29b85" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    ${lips}
+    ${bangs}
+    ${zoneSvg(id,(zones||[]).map(k=>Z[k]).filter(Boolean))}
+    ${callouts?calloutSvg(callouts.map(c=>({t:c.t, at:at[c.k]})), 200, 34, 252):""}
   </svg>`;
 }
 
-// 計測値 → イラストのパラメータ
+// ---- 計測値 → イラストのパラメータ
 function illusSet(mode, view, m, flags){
   const has = k => flags.some(f=>f.k===k);
   if (mode==="face"){
     const mo=m.mouth??1, et=m.eyeTail??4;
-    const now={sag:.18, mouth:clamp((1.2-mo)/2,0,.5), eye:clamp((4-et)/8,0,.5), cheek:.15, chin:0};
-    const fut={sag:.95, mouth:Math.min(1,Math.max(.85,now.mouth+.5)), eye:Math.max(.65,now.eye+.4), cheek:.95, chin:.9};
-    const nz=[...(has("mouth")?["jowl","jowlL"]:[])];
+    const now={sag:.15, mouth:clamp((1.2-mo)/2,0,.5), eye:clamp((4-et)/8,0,.5), cheek:.15, chin:0};
+    const fut={sag:.95, mouth:Math.min(1,Math.max(.85,now.mouth+.5)), eye:Math.max(.7,now.eye+.4), cheek:.95, chin:.9};
     return {
-      ideal: faceFigure({sag:0,mouth:0,eye:0,cheek:0,chin:0}, ILL.skin.ideal),
-      now: faceFigure(now, ILL.skin.now, nz),
-      future: faceFigure(fut, ILL.skin.future, ["jowl","jowlL","chin","jaw","jawL"],
-        [{k:"skin",t:"くすみ・むくみ"},{k:"eye",t:"目尻が下がる"},{k:"cheek",t:"頬が下がる"},{k:"naso",t:"ほうれい線が深く"},{k:"mouth",t:"への字口に"},{k:"jowl",t:"輪郭がたるむ"},{k:"chin",t:"二重あご"}])
+      ideal: faceFigure({sag:0,mouth:0,eye:0,cheek:0,chin:0}, "ideal"),
+      now: faceFigure(now, "now", has("mouth")?["jowl","jowlL"]:[]),
+      future: faceFigure(fut, "future", ["jowl","jowlL","chin","jaw","jawL"],
+        [{k:"skin",t:"くすみ・むくみ"},{k:"eye",t:"目尻が下がる"},{k:"cheek",t:"頬が下がる"},{k:"naso",t:"ほうれい線"},{k:"mouth",t:"への字口"},{k:"jowl",t:"輪郭がたるむ"},{k:"chin",t:"二重あご"}])
     };
   }
   if (view==="side"){
     const hf=m.headFwd??8, tr=m.trunk??0, ps=m.pelvisShift??0;
-    const now={shin:0, thigh:clamp(ps,-8,8), torso:clamp(tr,-6,15), neck:clamp(hf,0,30), kyph:clamp((hf-8)/25+tr/16,0,.6), belly:clamp(Math.abs(ps)/10+Math.max(0,tr)/16,0,.4)};
-    const fut={shin:5, thigh:now.thigh*1.3+(ps>=0?3:-6), torso:Math.max(0,now.torso)*1.2+3, neck:now.neck*1.4+22, kyph:Math.min(1,now.kyph+.7), belly:Math.min(1,now.belly+.65)};
+    const now={shin:0, thigh:clamp(ps,-8,8), torso:clamp(tr,-6,15), neck:clamp(hf,0,30), kyph:clamp((hf-8)/25+tr/16,0,.6), belly:clamp(Math.abs(ps)/10+Math.max(0,tr)/16,0,.4), sag:0, lord:ps<0?.5:0};
+    const fut={shin:5, thigh:now.thigh*1.3+(ps>=0?3:-6), torso:Math.max(0,now.torso)*1.2+3, neck:now.neck*1.4+22, kyph:Math.min(1,now.kyph+.7), belly:Math.min(1,now.belly+.65), sag:1, lord:ps<0?1:.3};
     const nz=[...(has("headFwd")?["neck"]:[]), ...(has("trunk")?["upper","belly"]:[]), ...(has("pelvisShift")?["low"]:[])];
-    const back = ps<0 ? {k:"low",t:"反り腰で腰に負担"} : {k:"low",t:"腰に負担"};
     return {
-      ideal: sideFigure({shin:0,thigh:0,torso:0,neck:6,kyph:0,belly:0}, ILL.body.ideal),
-      now: sideFigure(now, ILL.body.now, nz),
-      future: sideFigure(fut, ILL.body.future, ["neck","upper","low","belly","arm","butt"],
-        [{k:"head",t:"頭が前に出る"},{k:"neck",t:"首・肩がガチガチ"},{k:"back",t:"背中が丸まる"},{k:"arm",t:"二の腕に脂肪"},{k:"belly",t:"お腹ぽっこり"},back,{k:"butt",t:"お尻が垂れる"}])
+      ideal: sideFigure({shin:0,thigh:0,torso:0,neck:6,kyph:0,belly:0}, "ideal"),
+      now: sideFigure(now, "now", nz),
+      future: sideFigure(fut, "future", ["neck","upper","low","belly","arm","butt"],
+        [{k:"head",t:"頭が前に出る"},{k:"neck",t:"首・肩がガチガチ"},{k:"back",t:"背中が丸まる"},{k:"arm",t:"二の腕に脂肪"},{k:"belly",t:"お腹ぽっこり"},{k:"low",t:ps<0?"反り腰で腰に負担":"腰に負担"},{k:"butt",t:"お尻が垂れる"}])
     };
   }
   const sh=m.shoulder??0, pv=m.pelvis??0, hd=m.head??0, ax=m.axis??0, s=sg(sh), pvs=Math.abs(pv)>.5?sg(pv):-s;
@@ -1063,10 +1128,10 @@ function illusSet(mode, view, m, flags){
   const fut={rs:s*(Math.abs(sh)*1.8+5), rp:pvs*(Math.abs(pv)*1.8+4), rh:s*(Math.abs(hd)*1.8+8), axis:sg(ax||s)*(Math.abs(ax)*1.8+2.5), curve:s*.9, hipW:.8, oleg:.8, belly:.6};
   const nz=[...(has("shoulder")?["shoulder"]:[]), ...(has("pelvis")?["hipL","hipR"]:[]), ...(has("head")?["neck"]:[])];
   return {
-    ideal: frontFigure({rs:0,rp:0,rh:0,axis:0,curve:0,hipW:0,oleg:0,belly:0}, ILL.body.ideal),
-    now: frontFigure(now, ILL.body.now, nz),
-    future: frontFigure(fut, ILL.body.future, ["neck","shoulder","low","belly","hipL","hipR","thighL","thighR"],
-      [{k:"head",t:"顔・首が傾く"},{k:"shoulder",t:"肩の高さの差が広がる"},{k:"spine",t:"背骨がゆがむ"},{k:"belly",t:"下腹ぽっこり"},{k:"hip",t:"骨盤が開き下半身太り"},{k:"knee",t:"O脚ぎみに"}])
+    ideal: frontFigure({rs:0,rp:0,rh:0,axis:0,curve:0,hipW:0,oleg:0,belly:0}, "ideal"),
+    now: frontFigure(now, "now", nz),
+    future: frontFigure(fut, "future", ["neck","shoulder","low","belly","hipL","hipR","thighL","thighR"],
+      [{k:"head",t:"顔・首が傾く"},{k:"shoulder",t:"肩の高さがズレる"},{k:"spine",t:"背骨がゆがむ"},{k:"belly",t:"下腹ぽっこり"},{k:"hip",t:"下半身太り"},{k:"knee",t:"O脚ぎみに"}])
   };
 }
 function illusHtml(mode, view, m, flags){
@@ -1074,12 +1139,13 @@ function illusHtml(mode, view, m, flags){
   return `<div class="illus">
     <figure><figcaption>理想</figcaption>${s.ideal}</figure>
     <figure><figcaption style="color:var(--before)">今のあなた</figcaption>${s.now}</figure>
-    <figure class="fut"><figcaption style="color:#c0392b">このままだと…（数年後のイメージ）</figcaption>${s.future}</figure>
+    <figure class="fut"><figcaption style="color:#c9405b">このままだと…（数年後のイメージ）</figcaption>${s.future}</figure>
   </div>
-  <div class="legend2"><span><i style="background:${ILL.pink}"></i>筋肉がこりやすい・負担がかかる部位</span><span><i style="background:${ILL.yellow}"></i>脂肪・むくみがたまりやすい部位</span></div>`;
+  <div class="legend2"><span><i style="background:${ILL.pink}"></i>こり・負担がかかりやすい部位</span><span><i style="background:${ILL.yellow}"></i>脂肪・むくみがたまりやすい部位</span></div>`;
 }
 
 // ---------- 現状チェック画面 ----------
+function pick(list, kind){ const out=[]; for(let i=0;i<2;i++) list.forEach(r=>{ const x=(r[kind]||[])[i]; if(x && !out.includes(x)) out.push(x); }); return out.slice(0,2); } // 各課題の1番目を優先して混ぜる
 function showCheck(){
   screen("check");
   const mode=S.mode, views=(mode==="face"?["front"]:["front","side"]).filter(v=>S.shots[key(mode,v,"before")]);
@@ -1098,9 +1164,13 @@ function showCheck(){
       <h4 style="margin:18px 0 8px;font-size:16px">写真で見ると</h4>
       <div class="pair"><figure><canvas></canvas>
         <div class="legend"><span style="--c:${C.before}">今のあなた</span><span style="--c:#d23c2a">このままだと…（イメージ）</span></div></figure>
-      <div>${flagged.length?"":`<div class="risk info"><h4>大きな崩れは見られません</h4><small>今の良い状態をキープするための定期メンテナンスがおすすめです。</small></div>`}
-      ${list.map(r=>`<div class="risk ${r.lv}"><h4><span class="lv">${r.lv==="alert"?"要注意":r.lv==="warn"?"注意":"知っておきたいこと"}</span>${r.title}</h4>
-        <small>このままだと…</small><ul>${r.risks.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div></div>`;
+      <div>
+        <div class="tags">${flagged.length ? flagged.map(r=>`<span class="tag ${r.lv}">${r.lv==="alert"?"要注意":"注意"}｜${r.title}</span>`).join("") : `<span class="tag ok">大きな崩れは見られません</span>`}</div>
+        <div class="issues">
+          <div class="iss beauty"><b>美容面の課題</b><ul>${pick(list,"beauty").map(x=>`<li>${x}</li>`).join("")||"<li>今の状態をキープしましょう</li>"}</ul></div>
+          <div class="iss health"><b>健康面の課題</b><ul>${pick(list,"health").map(x=>`<li>${x}</li>`).join("")||"<li>今の状態をキープしましょう</li>"}</ul></div>
+        </div>
+      </div></div>`;
     body.appendChild(blk);
     const cv2=blk.querySelector("canvas");
     const {x,T}=drawShot(cv2,b,mode,v,C.before,700);
