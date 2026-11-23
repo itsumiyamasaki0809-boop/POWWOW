@@ -32,8 +32,16 @@ main{padding:14px max(3vw,14px) 40px}
 .tab.res[aria-pressed=true]{background:var(--after);color:#fff}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
 @media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
-.stage{position:relative;background:#141210;border-radius:14px;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:300px;max-height:78vh}
-.stage canvas{display:block;max-width:100%;max-height:78vh;width:auto;height:auto}
+.stage{position:relative;background:#141210;border-radius:14px 14px 0 0;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:260px;max-height:68vh}
+.stage canvas{display:block;max-width:100%;max-height:68vh;width:auto;height:auto}
+.shootBar{display:flex;gap:8px;align-items:center;background:var(--ink);padding:10px;border-radius:0 0 14px 14px;position:sticky;bottom:0;z-index:5}
+.shootBar .shoot{flex:1;min-height:56px}
+.shootBar .btn{background:#fff;min-height:56px}
+.shootBar .consent{color:#fff;font-size:13px;max-width:7.5em;line-height:1.3}
+.swatches{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.sw{display:flex;gap:10px;align-items:center;font-size:13px}
+.sw i{width:56px;height:56px;border-radius:12px;display:block;border:1px solid var(--line)}
+@media(max-width:600px){.stage,.stage canvas{max-height:58vh}}
 .stage video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .msg{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;justify-content:center;align-items:center;color:#fff;text-align:center;padding:20px;background:rgba(20,18,16,.75);font-size:17px}
 .msg[hidden]{display:none}
@@ -115,6 +123,7 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
 
   <section id="capture">
     <div class="grid">
+      <div class="left">
       <div class="stage" id="stage">
         <video id="video" playsinline muted></video>
         <canvas id="view" width="1280" height="720"></canvas>
@@ -127,6 +136,17 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
             <button class="btn" id="upBtn2">写真を読み込む</button>
           </div>
         </div>
+      </div>
+      <div class="shootBar">
+        <label class="inl consent"><input type="checkbox" id="consent"> お客様の同意あり</label>
+        <button class="shoot" id="shoot" disabled>Before を撮影</button>
+        <select class="btn" id="timer" aria-label="タイマー">
+          <option value="0">タイマーなし</option>
+          <option value="3" selected>3秒</option>
+          <option value="5">5秒</option>
+          <option value="10">10秒</option>
+        </select>
+      </div>
       </div>
 
       <div class="panel">
@@ -148,17 +168,9 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
           <div class="live" id="live" style="margin-top:10px"></div>
         </div>
 
-        <label class="inl card" style="padding:12px 14px"><input type="checkbox" id="consent"> 撮影・計測についてお客様の同意を得た</label>
-        <button class="shoot" id="shoot" disabled>Before を撮影</button>
         <div class="row">
           <button class="btn" id="upBtn">写真を読み込む</button>
           <button class="btn" id="flip">カメラ切替</button>
-          <select class="btn" id="timer" aria-label="タイマー">
-            <option value="0">タイマーなし</option>
-            <option value="3" selected>3秒タイマー</option>
-            <option value="5">5秒タイマー</option>
-            <option value="10">10秒タイマー</option>
-          </select>
           <input type="file" id="file" accept="image/*" hidden>
         </div>
 
@@ -188,7 +200,7 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
       </div>
     </div>
     <div id="resBody"></div>
-    <p class="disc">※ 計測値はカメラ画像から推定した参考値で、医学的な診断ではありません。撮影距離・角度・表情・服装で数値は変わります。同じ位置・同じ照明・三脚固定での撮影をおすすめします。</p>
+    <p class="disc">※ 計測値はカメラ画像から推定した参考値で、医学的な診断ではありません。撮影距離・角度・表情・服装で数値は変わります。同じ位置・同じ照明・三脚固定での撮影をおすすめします。小顔の「mm」は瞳孔間距離を62mmと仮定した推定値です。肌のトーンは照明の影響を強く受けるため、画面の上の角に同じ壁が映るように撮影してください（背景の色で補正します）。</p>
   </section>
 </main>
 
@@ -249,15 +261,60 @@ const DEFS = {
     {k:"pelvisShift", label:"骨盤の前後のずれ", kind:"deg", tol:.8, talk:"骨盤の前後のずれ"},
     {k:"plumb", label:"重心線（くるぶし〜耳）のずれ", kind:"deg", tol:.6, talk:"重心線のずれ"}
   ],
+  // 小顔：リフトアップ / 目の大きさ / 肌トーン（mmは瞳孔間距離62mmと仮定した推定値）
   "face-front":[
-    {k:"faceW", label:"顔幅（頬骨ライン）", kind:"pct", tol:1, talk:"顔幅"},
-    {k:"jawW", label:"エラ幅（下顎ライン）", kind:"pct", tol:1.2, talk:"エラ幅"},
-    {k:"area", label:"フェイスライン面積", kind:"pct", tol:1.5, talk:"フェイスラインの面積"},
-    {k:"chin", label:"あご角度（Vライン）", kind:"deg", tol:1, talk:"あごの角度", raw:true},
-    {k:"asym", label:"左右の非対称度", kind:"pct", tol:1, talk:"顔の左右差", raw:true},
-    {k:"eye", label:"目の高さの傾き", kind:"deg", tol:.7, talk:"目の高さの傾き"}
+    {k:"cheek", sec:"リフトアップ", label:"頬の位置（目のラインからの距離）", kind:"mm", better:"low", tol:.5, say:d=>`頬の位置が約${Math.abs(d).toFixed(1)}mm上がりました（リフトアップ）`},
+    {k:"jaw", sec:"リフトアップ", label:"フェイスラインの位置（エラ下）", kind:"mm", better:"low", tol:.6, say:d=>`フェイスラインが約${Math.abs(d).toFixed(1)}mm引き上がりました`},
+    {k:"mouth", sec:"リフトアップ", label:"口角の上がり", kind:"mm", better:"high", tol:.3, say:d=>`口角が約${Math.abs(d).toFixed(1)}mm上がりました`},
+    {k:"eyeTail", sec:"リフトアップ", label:"目尻の上がり", kind:"deg", better:"high", tol:.8, say:d=>`目尻が${Math.abs(d).toFixed(1)}°上がりました`},
+    {k:"faceW", sec:"リフトアップ", label:"顔幅（頬骨ライン）", kind:"pct", better:"low", tol:1, unit:"mm", say:d=>`顔幅が${Math.abs(d).toFixed(1)}%すっきりしました`},
+    {k:"eyeOpen", sec:"目の大きさ", label:"目の縦幅", kind:"mm", better:"high", tol:.3, say:d=>`目の縦幅が約${Math.abs(d).toFixed(1)}mm大きくなりました`},
+    {k:"eyeArea", sec:"目の大きさ", label:"目の面積", kind:"pct", better:"high", tol:3, unit:"mm²", say:d=>`目の大きさ（面積）が${Math.abs(d).toFixed(0)}%アップしました`},
+    {k:"skinL", sec:"肌のトーン", label:"肌の明るさ（L*）", kind:"val", better:"high", tol:1, bg:"bgL", say:d=>`肌の明るさが${Math.abs(d).toFixed(1)}ポイント明るくなりました（トーンアップ）`},
+    {k:"skinA", sec:"肌のトーン", label:"血色（赤み a*）", kind:"val", better:"high", tol:.8, bg:"bgA", say:d=>`血色が${Math.abs(d).toFixed(1)}ポイントよくなりました`},
+    {k:"skinB", sec:"肌のトーン", label:"黄ぐすみ（b*）", kind:"val", better:"low", tol:.8, bg:"bgB", say:d=>`黄ぐすみが${Math.abs(d).toFixed(1)}ポイント減りました`},
+    {k:"skinEven", sec:"肌のトーン", label:"肌のムラ（明るさのばらつき）", kind:"val", better:"low", tol:.3, say:d=>`肌の明るさのムラが減り、均一になりました`}
   ]
 };
+const MM_IPD = 62;
+const EYE_L = [33,246,161,160,159,158,157,173,133,155,154,153,145,144,163,7];
+const EYE_R = [263,466,388,387,386,385,384,398,362,382,381,380,374,373,390,249];
+// sRGB(0-255) -> CIE Lab (D65)
+function lab(r,g,b){
+  const f=c=>{c/=255; return c<=.04045?c/12.92:((c+.055)/1.055)**2.4;};
+  const R=f(r),G=f(g),B=f(b);
+  const X=(R*.4124+G*.3576+B*.1805)/.95047, Y=R*.2126+G*.7152+B*.0722, Z=(R*.0193+G*.1192+B*.9505)/1.08883;
+  const h=t=>t>.008856?Math.cbrt(t):7.787*t+16/116;
+  const fx=h(X),fy=h(Y),fz=h(Z);
+  return [116*fy-16, 500*(fx-fy), 200*(fy-fz)];
+}
+function sampleLab(ctx2, cx, cy, rad, square){
+  const x0=Math.max(0,Math.round(cx-rad)), y0=Math.max(0,Math.round(cy-rad));
+  const w=Math.max(1,Math.min(ctx2.canvas.width-x0,Math.round(rad*2))), h=Math.max(1,Math.min(ctx2.canvas.height-y0,Math.round(rad*2)));
+  const d=ctx2.getImageData(x0,y0,w,h).data, px=[];
+  const step=Math.max(1,Math.floor(rad/14));
+  for(let y=0;y<h;y+=step) for(let x=0;x<w;x+=step){
+    if(!square && (x-rad)**2+(y-rad)**2>rad*rad) continue;
+    const i=(y*w+x)*4; px.push([d[i],d[i+1],d[i+2]]);
+  }
+  return px;
+}
+function statLab(px){
+  const L=px.map(p=>({p,l:lab(...p)})).sort((a,b)=>a.l[0]-b.l[0]);
+  const t=L.slice(Math.floor(L.length*.1), Math.ceil(L.length*.9)||1);
+  const mean=i=>t.reduce((s,o)=>s+o.l[i],0)/t.length, mrgb=i=>Math.round(t.reduce((s,o)=>s+o.p[i],0)/t.length);
+  const mL=mean(0), sd=Math.sqrt(t.reduce((s,o)=>s+(o.l[0]-mL)**2,0)/t.length);
+  return {L:mL, a:mean(1), b:mean(2), sd, rgb:[mrgb(0),mrgb(1),mrgb(2)]};
+}
+// 肌（両頬）と背景（画面上の左右の角）の色を測る
+function skinMetrics(canvas, lm){
+  const x=canvas.getContext("2d",{willReadFrequently:true}), w=canvas.width, h=canvas.height, p=i=>P(lm,i,w,h);
+  const ipd=dist(p(468),p(473)), r=ipd*.22;
+  const sk=statLab([...sampleLab(x,p(205).x,p(205).y,r), ...sampleLab(x,p(425).x,p(425).y,r)]);
+  const s=Math.min(w,h)*.05;
+  const bg=statLab([...sampleLab(x,s*1.2,s*1.2,s,true), ...sampleLab(x,w-s*1.2,s*1.2,s,true)]);
+  return {skinL:sk.L, skinA:sk.a, skinB:sk.b, skinEven:sk.sd, skinRGB:sk.rgb, bgL:bg.L, bgA:bg.a, bgB:bg.b};
+}
 const groupKey = (m,v) => m==="face" ? "face-front" : `posture-${v}`;
 
 function computeMetrics(mode, view, lm, w, h){
@@ -265,17 +322,22 @@ function computeMetrics(mode, view, lm, w, h){
   if (mode === "face"){
     const p = i => P(lm,i,w,h);
     const ipd = dist(p(468), p(473)) || dist(p(33), p(263))*.85;
-    m.faceW = dist(p(234),p(454))/ipd*100;
-    m.jawW = dist(p(172),p(397))/ipd*100;
-    m.area = polyArea(OVAL.map(p))/(ipd*ipd)*100;
-    const c=p(152), a=p(172), b=p(397);
-    m.chin = deg(Math.acos(((a.x-c.x)*(b.x-c.x)+(a.y-c.y)*(b.y-c.y))/(dist(a,c)*dist(b,c))));
-    const t=p(168), u={x:c.x-t.x,y:c.y-t.y}, ul=Math.hypot(u.x,u.y);
-    const sd = q => ((q.x-t.x)*u.y-(q.y-t.y)*u.x)/ul;
-    const pairs=[[234,454],[132,361],[172,397],[58,288],[33,263]];
-    m.asym = pairs.reduce((s,[l,r])=>{const dl=Math.abs(sd(p(l))), dr=Math.abs(sd(p(r))); return s+Math.abs(dl-dr)/(dl+dr);},0)/pairs.length*100;
+    const mm = MM_IPD/ipd;
+    const el = mid(p(33),p(133)), er = mid(p(263),p(362));
+    const dl = Math.hypot(er.x-el.x, er.y-el.y), ux=(er.x-el.x)/dl, uy=(er.y-el.y)/dl;
+    const below = q => ((q.x-el.x)*(-uy) + (q.y-el.y)*ux)*mm; // 目のラインから下方向の距離(mm)
+    const avg = a => a.reduce((s,v)=>s+v,0)/a.length;
+    m.cheek = avg([50,280].map(i=>below(p(i))));
+    m.jaw = avg([172,397,136,365].map(i=>below(p(i))));
+    m.mouth = below(mid(p(13),p(14))) - avg([61,291].map(i=>below(p(i))));
+    const tail = (inn,out) => { const a=p(inn), b=p(out); return deg(Math.atan2(below(a)-below(b), Math.abs(b.x-a.x)*mm)); };
+    m.eyeTail = (tail(133,33)+tail(362,263))/2;
+    m.faceW = dist(p(234),p(454))*mm;
+    m.eyeOpen = (dist(p(159),p(145))+dist(p(386),p(374)))/2*mm;
+    m.eyeArea = (polyArea(EYE_L.map(p))+polyArea(EYE_R.map(p)))/2*mm*mm;
     m.eye = tiltH(p(33),p(263));
-    const cl=p(234), cr=p(454), n=p(1), em=mid(p(33),p(263));
+    m.lipGap = dist(p(13),p(14))*mm;
+    const c=p(152), cl=p(234), cr=p(454), n=p(1), em=mid(p(33),p(263));
     ref.yaw = (n.x-Math.min(cl.x,cr.x))/Math.abs(cr.x-cl.x);
     ref.pitch = (n.y-em.y)/(c.y-em.y);
     ref.scale = ipd/w; ref.ipdPx = ipd;
@@ -308,7 +370,13 @@ function dirText(groupK, k, v){
   if (groupK==="posture-side") return v>0 ? "前方" : "後方";
   return "";
 }
-function fmtVal(def, v){ return def.kind==="deg" ? `${Math.abs(v).toFixed(1)}°` : v.toFixed(1); }
+const betterOf = d => d.better || (d.kind==="deg" ? "zero" : "low");
+function fmtVal(def, v){
+  if (v==null || isNaN(v)) return "—";
+  if (def.kind==="deg") return `${(betterOf(def)==="zero"?Math.abs(v):v).toFixed(1)}°`;
+  if (def.kind==="mm") return `${v.toFixed(1)}mm`;
+  return v.toFixed(1)+(def.unit||"");
+}
 
 // ---------- alignment checks ----------
 function checks(mode, view, lm, w, h){
@@ -320,11 +388,17 @@ function checks(mode, view, lm, w, h){
     out.push({ok: ref.ipdPx > w*.07, t: ref.ipdPx > w*.07 ? "顔の大きさOK" : "もう少し近づいて"});
     out.push({ok: Math.abs(ref.yaw-.5) < .04, t: Math.abs(ref.yaw-.5)<.04 ? "正面OK" : (ref.yaw<.5 ? "顔を少し向かって右へ" : "顔を少し向かって左へ")});
     out.push({ok: Math.abs(m.eye) < 3, t: Math.abs(m.eye)<3 ? "首の傾きOK" : "首をまっすぐに"});
+    out.push({ok: m.eyeOpen > 5, t: m.eyeOpen > 5 ? "目OK" : "目を自然に開いて"});
+    out.push({ok: m.lipGap < 3, t: m.lipGap < 3 ? "真顔OK" : "口を閉じて真顔で"});
     if (before){
       const sc = ref.scale/before.ref.scale;
       out.push({ok: Math.abs(sc-1)<.05, t: Math.abs(sc-1)<.05 ? "距離 Beforeと一致" : (sc>1 ? "Beforeより近い" : "Beforeより遠い")});
       const dp = ref.pitch-before.ref.pitch;
-      out.push({ok: Math.abs(dp)<.04, t: Math.abs(dp)<.04 ? "あごの角度 一致" : (dp>0 ? "あごを少し上げて" : "あごを少し引いて")});
+      out.push({ok: Math.abs(dp)<.03, t: Math.abs(dp)<.03 ? "あごの角度 一致" : (dp>0 ? "あごを少し上げて" : "あごを少し引いて")});
+      if (S.liveBgL!=null && before.m.bgL!=null){
+        const dL = S.liveBgL - before.m.bgL;
+        out.push({ok: Math.abs(dL)<4, t: Math.abs(dL)<4 ? "照明 Beforeと一致" : (dL>0 ? "Beforeより明るい照明です" : "Beforeより暗い照明です")});
+      }
     }
   } else {
     out.push({ok: ref.full, t: ref.full ? "頭〜足首まで映っています" : "頭から足首まで入れてください"});
@@ -341,9 +415,10 @@ function checks(mode, view, lm, w, h){
 
 // ---------- drawing ----------
 const POSE_LINKS = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28],[27,31],[28,32],[27,29],[28,30]];
-function label(ctx, text, x, y, color, size){
+function label(ctx, text, x, y, color, size, alignRight){
   ctx.font = `700 ${size}px "Zen Kaku Gothic New",sans-serif`;
   const w = ctx.measureText(text).width, pad = size*.35;
+  if (alignRight) x -= w + pad*2;
   ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.beginPath(); ctx.roundRect(x-pad, y-size*.95, w+pad*2, size*1.35, size*.3); ctx.fill();
   ctx.fillStyle = color; ctx.fillText(text, x, y);
 }
@@ -357,16 +432,31 @@ function drawOverlay(ctx, lm, mode, view, T, opt){
   const line = (a,b,w=lw) => { ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); };
   const dot = (a,r=lw*1.6) => { ctx.beginPath(); ctx.arc(a.x,a.y,r,0,Math.PI*2); ctx.fill(); };
   if (mode==="face"){
-    ctx.beginPath(); OVAL.forEach((i,n)=>{const q=t(i); n?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);}); ctx.closePath(); ctx.stroke();
-    ctx.globalAlpha=.85; line(t(234),t(454),lw*.8); line(t(172),t(397),lw*.8);
-    const top=t(10), chin=t(152), br=t(168); ctx.setLineDash([lw*2,lw*2]); line(br, chin, lw*.7); ctx.setLineDash(dashed?[lw*3,lw*2.5]:[]);
-    line(t(152),t(172),lw*.8); line(t(152),t(397),lw*.8);
-    ctx.globalAlpha=1; [234,454,172,397,152,468,473].forEach(i=>dot(t(i),lw*1.2));
+    const poly = ids => { ctx.beginPath(); ids.forEach((i,n)=>{const q=t(i); n?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);}); ctx.closePath(); ctx.stroke(); };
+    ctx.globalAlpha=.45; poly(OVAL); ctx.globalAlpha=1;
+    poly(EYE_L); poly(EYE_R);
+    // 目のライン（基準線）
+    const el=mid(t(33),t(133)), er=mid(t(263),t(362)), dl=dist(el,er), ux=(er.x-el.x)/dl, uy=(er.y-el.y)/dl;
+    const wl=t(234), wr=t(454), ext=dist(wl,wr)*.15;
+    const proj = q => { const k=(q.x-el.x)*ux+(q.y-el.y)*uy; return {x:el.x+ux*k, y:el.y+uy*k}; };
+    const a0=proj(wl), a1=proj(wr);
+    line({x:a0.x-ux*ext,y:a0.y-uy*ext},{x:a1.x+ux*ext,y:a1.y+uy*ext},lw*1.1);
+    // 頬・フェイスライン・口角から目のラインまでの距離
+    ctx.setLineDash([lw*1.5,lw*1.5]); ctx.globalAlpha=.8;
+    [50,280,172,397,61,291].forEach(i=>line(proj(t(i)),t(i),lw*.7));
+    ctx.globalAlpha=1; ctx.setLineDash(dashed?[lw*3,lw*2.5]:[]);
+    line(t(172),t(136),lw*.9); line(t(136),t(150),lw*.9); line(t(397),t(365),lw*.9); line(t(365),t(379),lw*.9);
+    [50,280,172,397,136,365,61,291].forEach(i=>dot(t(i),lw*1.4));
+    if (!dashed){ // 肌の測定エリア
+      const r=dist(t(468),t(473))*.22; ctx.setLineDash([lw,lw*1.5]); ctx.lineWidth=lw*.7;
+      [205,425].forEach(i=>{const q=t(i); ctx.beginPath(); ctx.arc(q.x,q.y,r,0,Math.PI*2); ctx.stroke();}); ctx.setLineDash([]);
+    }
     if (labels && metrics){
-      const a=t(454), b=t(397);
-      label(ctx, `顔幅 ${metrics.faceW.toFixed(1)}`, a.x+fs*.5, a.y, color, fs);
-      label(ctx, `エラ ${metrics.jawW.toFixed(1)}`, b.x+fs*.5, b.y+fs*.3, color, fs);
-      label(ctx, `あご ${metrics.chin.toFixed(1)}°`, chin.x-fs*2.6, chin.y+fs*1.5, color, fs);
+      const right = Math.max(wr.x, wl.x)+fs*.3, left = Math.min(wr.x, wl.x)-fs*.3;
+      label(ctx, `頬 ${metrics.cheek.toFixed(1)}`, left, t(50).y, color, fs, true);
+      label(ctx, `ライン ${metrics.jaw.toFixed(1)}`, left, t(172).y+fs*.4, color, fs, true);
+      label(ctx, `目 ${metrics.eyeOpen.toFixed(1)}`, right, er.y-fs*.4, color, fs);
+      label(ctx, `口角 ${metrics.mouth.toFixed(1)}`, right, t(291).y+fs*.4, color, fs);
     }
   } else if (view==="front"){
     POSE_LINKS.forEach(([a,b])=>line(t(a),t(b)));
@@ -407,7 +497,7 @@ function drawOverlay(ctx, lm, mode, view, T, opt){
 
 // ---------- camera & live loop ----------
 const video=$("video"), cv=$("view"), ctx=cv.getContext("2d");
-let lastTs = -1, loopOn = false;
+let lastTs = -1, loopOn = false, frameN = 0; const small = document.createElement("canvas");
 async function startCam(){
   $("msgText").textContent = "カメラを起動しています…";
   try{
@@ -438,6 +528,12 @@ function loop(){
     }
   }
   ctx.save(); if (mirror()){ ctx.translate(W,0); ctx.scale(-1,1); } ctx.drawImage(video,0,0,W,H); ctx.restore();
+  if (S.mode==="face" && (++frameN % 10)===0){ // 照明チェック用に背景の明るさを測る
+    const sw=160, sh=Math.round(160*H/W); small.width=sw; small.height=sh;
+    const sx=small.getContext("2d",{willReadFrequently:true}); sx.drawImage(video,0,0,sw,sh);
+    const s=Math.min(sw,sh)*.05;
+    S.liveBgL = statLab([...sampleLab(sx,s*1.2,s*1.2,s,true), ...sampleLab(sx,sw-s*1.2,s*1.2,s,true)]).L;
+  }
   const before = S.phase==="after" ? S.shots[key(S.mode,S.view,"before")] : null;
   const g = +$("ghost").value/100;
   if (before && g>0){ ctx.save(); ctx.globalAlpha=g; ctx.drawImage(before.canvas,0,0,W,H); ctx.restore(); }
@@ -462,7 +558,7 @@ function drawGuide(W,H){
 function renderLive(m){
   const defs = DEFS[groupKey(S.mode,S.view)];
   if (!m){ $("live").innerHTML = ""; return; }
-  $("live").innerHTML = defs.map(d=>{
+  $("live").innerHTML = defs.filter(d=>m[d.k]!=null).map(d=>{
     const v = S.smooth[d.k] = (S.smooth[d.k] ?? m[d.k])*.8 + m[d.k]*.2;
     return `<span>${d.label}</span><b>${fmtVal(d,v)}</b>`;
   }).join("");
@@ -485,6 +581,7 @@ async function analyzeAndStore(canvas){
     await setMode(kind,"VIDEO");
     if (!lm){ toast(S.mode==="face" ? "顔を検出できませんでした。正面・明るい場所で撮り直してください。" : "全身を検出できませんでした。頭から足首まで入れて撮り直してください。"); return; }
     const {m, ref} = computeMetrics(S.mode, S.view, lm, canvas.width, canvas.height);
+    if (S.mode==="face") Object.assign(m, skinMetrics(canvas, lm));
     S.shots[key()] = {canvas, lm, m, ref, w:canvas.width, h:canvas.height, thumb: canvas.toDataURL("image/jpeg",.6)};
     advance();
   } finally { S.busy = false; }
@@ -550,7 +647,7 @@ $("file").onchange=e=>{ fromFile(e.target.files[0]); e.target.value=""; };
 // ---------- result ----------
 function cropRect(shot, mode, view){
   const {lm,w,h} = shot, p = i => P(lm,i,w,h);
-  if (mode==="face"){ const u = shot.ref.ipdPx, c = mid(p(10),p(152)); const ch=u*4.8, cw=u*3.9; return {x:c.x-cw/2, y:c.y-ch/2, w:cw, h:ch}; }
+  if (mode==="face"){ const u = shot.ref.ipdPx, c = mid(p(10),p(152)); const ch=u*4.8, cw=u*4.8; return {x:c.x-cw/2, y:c.y-ch/2, w:cw, h:ch}; }
   const top = p(0).y, ank = view==="front" ? mid(p(27),p(28)) : p(sideOf(lm).ank), H = ank.y-top;
   const ch = H*1.32, cw = ch*.62; return {x:ank.x-cw/2, y:(top+ank.y)/2-H*.03-ch/2, w:cw, h:ch};
 }
@@ -568,22 +665,25 @@ function renderAnnotated(c2, shot, mode, view, color, dw){
   drawOverlay(x, shot.lm, mode, view, T, {color, scale: dw/700, labels:true, metrics:shot.m});
 }
 function compare(def, b, a){
-  const bv = def.kind==="deg" && !def.raw ? Math.abs(b) : b, av = def.kind==="deg" && !def.raw ? Math.abs(a) : a;
-  let change, improved;
-  if (def.kind==="pct" && !def.raw){ change = (av-bv)/bv*100; improved = change < -def.tol ? 1 : change > def.tol ? -1 : 0; return {bv,av,improved,txt:`${change>0?"+":""}${change.toFixed(1)}%`}; }
-  change = av-bv; improved = change < -def.tol ? 1 : change > def.tol ? -1 : 0;
-  return {bv,av,improved,txt:`${change>0?"+":""}${change.toFixed(1)}${def.kind==="deg"?"°":"pt"}`};
+  const bt = betterOf(def);
+  const bv = bt==="zero" ? Math.abs(b) : b, av = bt==="zero" ? Math.abs(a) : a;
+  const delta = def.kind==="pct" ? (av-bv)/bv*100 : av-bv;
+  const up = bt==="high";
+  const improved = (up ? delta > def.tol : delta < -def.tol) ? 1 : (up ? delta < -def.tol : delta > def.tol) ? -1 : 0;
+  const unit = def.kind==="pct" ? "%" : def.kind==="deg" ? "°" : def.kind==="mm" ? "mm" : "";
+  return {bv, av, delta, improved, txt:`${delta>0?"+":""}${delta.toFixed(1)}${unit}`};
 }
 function resultRows(mode, view){
   const b=S.shots[key(mode,view,"before")], a=S.shots[key(mode,view,"after")];
   if(!b||!a) return null;
-  return DEFS[groupKey(mode,view)].map(d=>({d, ...compare(d, b.m[d.k], a.m[d.k]), bdir:dirText(groupKey(mode,view),d.k,b.m[d.k])}));
+  return DEFS[groupKey(mode,view)].filter(d=>b.m[d.k]!=null && a.m[d.k]!=null).map(d=>{
+    // 肌の色は背景の色の変化（照明・カメラの自動補正）を差し引いて比較する
+    const av = d.bg ? a.m[d.k] - (a.m[d.bg] - b.m[d.bg]) : a.m[d.k];
+    return {d, ...compare(d, b.m[d.k], av), bdir:dirText(groupKey(mode,view),d.k,b.m[d.k])};
+  });
 }
 function talkLines(rows){
-  return rows.filter(r=>r.improved===1).map(r=>{
-    if (r.d.kind==="pct" && !r.d.raw) return `${r.d.talk}が ${Math.abs((r.av-r.bv)/r.bv*100).toFixed(1)}% すっきりしました`;
-    return `${r.d.talk}が ${fmtVal(r.d,r.bv)} → ${fmtVal(r.d,r.av)} に改善しました`;
-  });
+  return rows.filter(r=>r.improved===1).map(r=> r.d.say ? r.d.say(r.delta) : `${r.d.talk}が ${fmtVal(r.d,r.bv)} → ${fmtVal(r.d,r.av)} に改善しました`);
 }
 function showResult(){
   $("capture").hidden=true; $("result").hidden=false; renderUI();
@@ -602,8 +702,12 @@ function showResult(){
       <div class="pair"><figure><figcaption style="color:${C.before}">Before 施術前</figcaption><canvas></canvas></figure><figure><figcaption style="color:${C.after}">After 施術後</figcaption><canvas></canvas></figure></div>
       <div class="wipe"><canvas></canvas><input type="range" min="0" max="100" value="50" aria-label="Before/After スライダー"><div class="lbl"><span style="color:${C.before}">← Before</span><span style="color:${C.after}">After →</span></div></div>
       <table><thead><tr><th>計測項目</th><th>Before</th><th>After</th><th>変化</th><th></th></tr></thead><tbody>
-      ${rows.map(r=>`<tr><td>${r.d.label}${r.bdir?`<br><small style="color:var(--sub)">施術前：${r.bdir}</small>`:""}</td><td class="b">${fmtVal(r.d,r.bv)}</td><td class="a">${fmtVal(r.d,r.av)}</td><td>${r.txt}</td><td><span class="badge ${r.improved>0?"up":r.improved<0?"dn":"eq"}">${r.improved>0?"改善":r.improved<0?"要確認":"誤差範囲"}</span></td></tr>`).join("")}
+      ${rows.map((r,i)=>`${r.d.sec && r.d.sec!==(rows[i-1]||{d:{}}).d.sec ? `<tr><td colspan="5" style="font-weight:700;padding-top:16px;border-bottom:2px solid var(--ink)">${r.d.sec}</td></tr>`:""}<tr><td>${r.d.label}${r.bdir?`<br><small style="color:var(--sub)">施術前：${r.bdir}</small>`:""}</td><td class="b">${fmtVal(r.d,r.bv)}</td><td class="a">${fmtVal(r.d,r.av)}</td><td>${r.txt}</td><td><span class="badge ${r.improved>0?"up":r.improved<0?"dn":"eq"}">${r.improved>0?"改善":r.improved<0?"要確認":"誤差範囲"}</span></td></tr>`).join("")}
       </tbody></table>
+      ${mode==="face" && b.m.skinRGB ? `<div class="swatches"><b style="font-size:14px">頬の肌色</b>
+        <span class="sw"><i style="background:rgb(${b.m.skinRGB})"></i>Before</span>
+        <span class="sw"><i style="background:rgb(${a.m.skinRGB})"></i>After</span>
+        <span class="note" style="margin:0">点線の円の範囲を測定。照明の違いは背景の色で補正しています。</span></div>` : ""}
       ${talks.length?`<div class="talk"><h4>お客様へのご説明</h4><ul>${talks.map(t=>`<li>${t}</li>`).join("")}</ul></div>`:""}`;
     body.appendChild(blk);
     const [cb, ca] = blk.querySelectorAll(".pair canvas");
@@ -626,9 +730,10 @@ function buildExport(){
   const parts = views.map(v=>{
     const cb=document.createElement("canvas"), ca=document.createElement("canvas");
     renderAnnotated(cb,S.shots[key(mode,v,"before")],mode,v,C.before,colW); renderAnnotated(ca,S.shots[key(mode,v,"after")],mode,v,C.after,colW);
-    return {v, cb, ca, rows: resultRows(mode,v)};
+    const rows=resultRows(mode,v);
+    return {v, cb, ca, rows, talks: talkLines(rows), b:S.shots[key(mode,v,"before")], a:S.shots[key(mode,v,"after")]};
   });
-  const rowH=58, H = 190 + parts.reduce((s,p)=>s+70+p.cb.height+40+p.rows.length*rowH+50,0) + 110;
+  const rowH=58, H = 190 + parts.reduce((s,p)=>s+70+p.cb.height+40+p.rows.length*rowH+50+(mode==="face"?130:0)+(p.talks.length?70+p.talks.length*44:0),0) + 110;
   const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
   const F = (w,s)=>`${w} ${s}px "Zen Kaku Gothic New","Hiragino Sans",sans-serif`;
   x.fillStyle="#f7f5f2"; x.fillRect(0,0,W,H);
@@ -651,6 +756,18 @@ function buildExport(){
       x.font=F(700,24); x.fillStyle = r.improved>0?C.ok:"#8a817a"; x.fillText(r.improved>0?`改善 ${r.txt}`:"誤差範囲", W-pad-20, y+36);
       x.textAlign="left"; y+=rowH;
     });
+    if (mode==="face" && p.b.m.skinRGB){
+      y+=30; x.fillStyle=C.ink; x.font=F(700,26); x.fillText("頬の肌色", pad, y+55);
+      [[p.b,"Before",C.before],[p.a,"After",C.after]].forEach(([s,t,col],i)=>{
+        const sx=pad+170+i*260; x.fillStyle=`rgb(${s.m.skinRGB})`; x.beginPath(); x.roundRect(sx,y,90,90,16); x.fill();
+        x.fillStyle=col; x.font=F(700,24); x.fillText(t, sx+105, y+55);
+      });
+      y+=100;
+    }
+    if (p.talks.length){
+      y+=30; x.fillStyle=C.after; x.font=F(700,28); x.fillText("今日の変化", pad, y+20); y+=40;
+      x.fillStyle=C.ink; x.font=F(500,26); p.talks.forEach(t=>{ x.fillText("・"+t, pad+10, y+26); y+=44; });
+    }
     y+=50;
   });
   x.fillStyle="#8a817a"; x.font=F(400,20);
