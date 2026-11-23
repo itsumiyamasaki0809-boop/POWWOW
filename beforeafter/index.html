@@ -1289,12 +1289,14 @@ function guideImg(view){
 function sideRefHtml(flags, m){
   const c=chooseTwoSided(SIDE_CAT, flags, SIDE_DEF), li=sd=>c.filter(x=>x.side===sd).map(x=>`<span>${x.t}</span>`).join("");
   const v=m&&m.sacrum, st = v==null ? "" : Math.abs(v)<6 ? "ほぼまっすぐ" : v<0 ? "後ろに傾きぎみ" : "前に傾きぎみ（反り腰）";
-  return `<div class="refwrap"><img class="refimg" src="posture-side.jpg" alt="背すじを伸ばした姿勢と、背中が丸まった姿勢の比較イラスト">
+  // 反り腰：仙骨が前に6°以上傾いている、またはお尻がくるぶしより後ろに引けている
+  const sway = m && ((m.sacrum??0) >= 6 || (m.pelvisShift??0) <= -3);
+  const steps = sway
+    ? `<li><b>仙骨（骨盤）が前に傾く</b> → 腰が反る</li><li><b>腰が反る</b> → 下腹が前に出る</li><li><b>腰まわりに負担</b> → 腰痛・前ももの張り</li>`
+    : `<li><b>仙骨（骨盤）が後ろに傾く</b> → 背中が丸まる</li><li><b>背中が丸まる</b> → 頭が前に出る</li><li><b>骨盤まわりが固まる</b> → 下腹・お尻・腰に影響</li>`;
+  return `<div class="refwrap"><img class="refimg" src="${sway?"posture-sway.jpg":"posture-side.jpg"}" alt="${sway?"自然に立った姿勢と、反り腰の姿勢の比較イラスト":"背すじを伸ばした姿勢と、背中が丸まった姿勢の比較イラスト"}">
     <div class="side">
-      <div class="explain"><h5>姿勢の土台は「仙骨」</h5><ol>
-        <li><b>仙骨（骨盤）が後ろに傾く</b> → 背中が丸まる</li>
-        <li><b>背中が丸まる</b> → 頭が前に出る</li>
-        <li><b>骨盤まわりが固まる</b> → 下腹・お尻・腰に影響</li></ol>
+      <div class="explain"><h5>姿勢の土台は「仙骨」</h5><ol>${steps}</ol>
         ${st?`<p>あなたの仙骨：<span class="sac ${Math.abs(v)<6?"ok":"ng"}">${st}${Math.abs(v)>=6?`（${Math.abs(v).toFixed(1)}°）`:""}</span></p>`:""}
         <p>→ 土台の仙骨から整えるのが近道</p></div>
       <div class="yourcase"><h5>あなたの場合</h5>
