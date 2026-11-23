@@ -5,20 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>POWWOW ビフォーアフター計測</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&family=Josefin+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /*
 VOICE: 落ち着いたサロンの計測器。お客様に見せても安心できる、清潔で静かな画面。
 IDEA: 施術カルテと姿勢分析ボード。撮影 → 計測 → 比較シートの3段。
 PICTURE: カメラ映像そのもの。ガイド線・骨格線・前回の残像で位置合わせ。
-COLOUR/TYPE: 白地＋墨色、Before=スレートブルー、After=コーラル。Zen Kaku Gothic New。
+COLOUR/TYPE: パウワウのカウンセリングシートと同じトーン（クリーム地＋ブランドピンク #E91E63 / #C2185B、文字 #4A041E）。Noto Serif JP。
 LAYOUT: タブレット横向きは映像左・操作右、縦向き/スマホは縦積み。
 */
-:root{color-scheme:light;--bg:#f7f5f2;--card:#fff;--ink:#231f1c;--sub:#6f6760;--line:#e4dfd9;--before:#4f7396;--after:#e0674b;--ok:#2f8f6a;--warn:#c9821c;--bad:#c2412d}
+:root{color-scheme:light;--bg:#FFF5F8;--card:#fff;--ink:#4A041E;--sub:#8f5f72;--line:#F8E1E7;--before:#9C6B84;--after:#E91E63;--ok:#2f8f6a;--warn:#c9821c;--bad:#C2185B;--pink:#E91E63;--pinkd:#C2185B;--dark:#880E4F;--pale:#FCE4EC}
 *{box-sizing:border-box;min-width:0}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;overflow-x:clip}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Serif JP","Hiragino Mincho ProN",serif;letter-spacing:.02em;overflow-x:clip}
 button,input,select{font:inherit;color:inherit}
-header{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px max(3vw,14px);background:var(--ink);color:#fff}
+header{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px max(3vw,14px);background:var(--pinkd);color:#fff}
+header .logo{height:44px;width:auto;display:block}
+header .ttl{font-size:15px;font-weight:500;color:var(--pale);border-left:1px solid rgba(255,255,255,.4);padding-left:14px}
 header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.02em}
 header h1 small{font-weight:400;opacity:.7;margin-left:8px;font-size:13px}
 .cust{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;align-items:center}
@@ -27,14 +29,14 @@ header h1 small{font-weight:400;opacity:.7;margin-left:8px;font-size:13px}
 main{padding:14px max(3vw,14px) 40px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .tab{min-height:46px;padding:0 18px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;font-weight:500}
-.tab[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab[aria-pressed=true]{background:var(--pinkd);color:#fff;border-color:var(--pinkd)}
 .tab.res{margin-left:auto;border-color:var(--after);color:var(--after)}
 .tab.res[aria-pressed=true]{background:var(--after);color:#fff}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
 @media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
-.stage{position:relative;background:#141210;border-radius:14px 14px 0 0;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:260px;max-height:68vh}
+.stage{position:relative;background:#2a0a18;border-radius:14px 14px 0 0;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:260px;max-height:68vh}
 .stage canvas{display:block;max-width:100%;max-height:68vh;width:auto;height:auto}
-.shootBar{display:flex;gap:8px;align-items:center;background:var(--ink);padding:10px;border-radius:0 0 14px 14px;position:sticky;bottom:0;z-index:5}
+.shootBar{display:flex;gap:8px;align-items:center;background:var(--dark);padding:10px;border-radius:0 0 14px 14px;position:sticky;bottom:0;z-index:5}
 .shootBar .shoot{flex:1;min-height:56px}
 .shootBar .btn{background:#fff;min-height:56px}
 .shootBar .consent{color:#fff;font-size:13px;max-width:7.5em;line-height:1.3}
@@ -65,7 +67,7 @@ main{padding:14px max(3vw,14px) 40px}
 .shoot:disabled{opacity:.45;cursor:default}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn{min-height:44px;padding:0 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;cursor:pointer}
-.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.pri{background:var(--pinkd);color:#fff;border-color:var(--pinkd)}
 label.inl{display:flex;gap:8px;align-items:center;font-size:14px}
 input[type=range]{width:100%;accent-color:var(--after)}
 input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
@@ -115,16 +117,16 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .refbox{position:relative;container-type:inline-size}
 .relabel{position:absolute;top:20.2%;height:6.93%;border-radius:999px;display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-weight:700;font-size:16px;font-size:3.1cqw;letter-spacing:.06em}
 .yourcase{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
-.yourcase h5{margin:0 0 12px;font-size:18px;color:#c9405b}
+.yourcase h5{margin:0 0 12px;font-size:18px;color:var(--pinkd)}
 .yc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
 .yc b{width:100%;font-size:13px}
 .yc span{font-weight:700;font-size:17px;padding:6px 16px;border-radius:999px}
 .yc.h b{color:#2f7fa3}.yc.h span{background:#e9f3f8;color:#23688a;border:1px solid #b6d6e6}
 .yc.b b{color:#e0567a}.yc.b span{background:#fdeef2;color:#c43c62;border:1px solid #f2b8c8}
 @media(max-width:700px){.refwrap{grid-template-columns:minmax(0,1fr)}}
-.futHead{margin:22px 0 8px;font-size:clamp(20px,2.6vw,26px);color:#c9405b;border-top:2px dashed #f0c3c9;padding-top:16px}
+.futHead{margin:22px 0 8px;font-size:clamp(20px,2.6vw,26px);color:var(--pinkd);border-top:1px solid var(--pink);padding-top:16px}
 .explain{margin-top:12px;background:#fff7f8;border:1px solid #f4cdd3;border-radius:14px;padding:14px 18px}
-.explain h5{margin:0 0 6px;font-size:16px;color:#c9405b}
+.explain h5{margin:0 0 6px;font-size:16px;color:var(--pinkd)}
 .explain ol{margin:0;padding-left:1.4em;line-height:1.7}.explain b{color:#c43c62}
 .explain p{margin:8px 0 0;font-weight:700;color:var(--ink)}
 .future{background:var(--ink);color:#fff;border-radius:14px;padding:16px 18px;margin-top:14px}
@@ -132,15 +134,15 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .future ul{margin:0;padding-left:1.2em}.future li{margin:3px 0}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-top:6px}.legend span::before{content:"";display:inline-block;width:18px;height:3px;margin-right:6px;vertical-align:middle;background:var(--c)}
 .resHead{display:flex;flex-wrap:wrap;gap:10px;align-items:end;justify-content:space-between;margin:6px 0 14px}
-.resHead h2{margin:0;font-size:clamp(24px,3.4vw,36px);line-height:1.1}
+.resHead h2{margin:0;font-size:clamp(22px,3.2vw,32px);line-height:1.3;font-weight:500;color:var(--pinkd)}
 .viewBlock{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
-.viewBlock h3{margin:0 0 12px;font-size:20px}
+.viewBlock h3{margin:0 0 12px;font-size:20px;color:var(--pinkd);font-weight:500}
 .pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .pair figure{margin:0}
-.pair canvas{width:100%;height:auto;border-radius:12px;display:block;background:#141210}
+.pair canvas{width:100%;height:auto;border-radius:12px;display:block;background:#2a0a18}
 .pair figcaption{font-weight:700;margin-bottom:6px}
 .wipe{margin-top:14px}
-.wipe canvas{width:100%;max-width:520px;display:block;margin:0 auto;border-radius:12px;background:#141210}
+.wipe canvas{width:100%;max-width:520px;display:block;margin:0 auto;border-radius:12px;background:#2a0a18}
 .wipe .lbl{display:flex;justify-content:space-between;max-width:520px;margin:4px auto 0;font-size:13px;font-weight:700}
 table{width:100%;border-collapse:collapse;margin-top:14px;font-size:15px}
 th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
@@ -158,7 +160,7 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
 </head>
 <body>
 <header>
-  <h1>POWWOW ビフォーアフター計測<small>姿勢・小顔</small></h1>
+  <img class="logo" src="powwow-logo.png" alt="POWWOW women's healthcare"><span class="ttl">ビフォーアフター計測</span>
   <div class="cust">
     <input id="cName" placeholder="お客様名" autocomplete="off">
     <input id="cStore" placeholder="店舗名" autocomplete="off">
@@ -274,7 +276,8 @@ const MODELS = {
   face: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task"
 };
 const $ = id => document.getElementById(id);
-const C = {before:"#4f7396", after:"#e0674b", ink:"#231f1c", ok:"#2f8f6a", warn:"#c9821c"};
+const C = {before:"#9C6B84", after:"#E91E63", ink:"#4A041E", ok:"#2f8f6a", warn:"#c9821c"};
+const LOGO = new Image(); LOGO.src = "powwow-logo.png";
 
 // ---------- state ----------
 const S = {mode:"posture", view:"side", phase:"before", facing:"environment", shots:{}, live:null, smooth:{}, busy:false, stream:null};
@@ -549,7 +552,7 @@ function checks(mode, view, lm, w, h){
 // ---------- drawing ----------
 const POSE_LINKS = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28],[27,31],[28,32],[27,29],[28,30]];
 function label(ctx, text, x, y, color, size, alignRight){
-  ctx.font = `700 ${size}px "Zen Kaku Gothic New",sans-serif`;
+  ctx.font = `700 ${size}px "Noto Serif JP",sans-serif`;
   const w = ctx.measureText(text).width, pad = size*.35;
   if (alignRight) x -= w + pad*2;
   ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.beginPath(); ctx.roundRect(x-pad, y-size*.95, w+pad*2, size*1.35, size*.3); ctx.fill();
@@ -750,7 +753,7 @@ function drawGuide(W,H){
       ctx.save(); ctx.globalAlpha = .85; ctx.drawImage(img, gx, gy, 200*k, 440*k); ctx.restore();
     }
     const fs = Math.max(14, H/36);
-    ctx.save(); ctx.font = `700 ${fs}px "Zen Kaku Gothic New",sans-serif`; ctx.fillStyle="rgba(255,255,255,.9)"; ctx.textAlign="left";
+    ctx.save(); ctx.font = `700 ${fs}px "Noto Serif JP",sans-serif`; ctx.fillStyle="rgba(255,255,255,.9)"; ctx.textAlign="left";
     ctx.fillText(S.view==="side" ? "右向きに立ち、シルエットに体を合わせてください" : "正面を向き、シルエットに体を合わせてください", fs*.8, H*.95-fs*.6);
     ctx.restore();
   }
@@ -861,7 +864,7 @@ function cropRect(shot, mode, view){
 function drawShot(c2, shot, mode, view, color, dw){
   const r = cropRect(shot, mode, view), dh = Math.round(dw*r.h/r.w);
   c2.width = dw; c2.height = dh; const x = c2.getContext("2d");
-  x.fillStyle="#141210"; x.fillRect(0,0,dw,dh);
+  x.fillStyle="#2a0a18"; x.fillRect(0,0,dw,dh);
   const k = dw/r.w;
   const sx=Math.max(0,r.x), sy=Math.max(0,r.y), ex=Math.min(shot.w,r.x+r.w), ey=Math.min(shot.h,r.y+r.h);
   if (ex>sx && ey>sy) x.drawImage(shot.canvas, sx,sy,ex-sx,ey-sy, (sx-r.x)*k,(sy-r.y)*k,(ex-sx)*k,(ey-sy)*k);
@@ -1353,9 +1356,10 @@ function buildExport(){
   });
   const rowH=58, H = 190 + parts.reduce((s,p)=>s+70+p.cb.height+40+p.rows.length*rowH+50+(mode==="face"&&p.rows.some(r=>r.d.sec==="肌のトーン")?130:0)+(p.talks.length?70+p.talks.length*44:0),0) + 110;
   const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
-  const F = (w,s)=>`${w} ${s}px "Zen Kaku Gothic New","Hiragino Sans",sans-serif`;
-  x.fillStyle="#f7f5f2"; x.fillRect(0,0,W,H);
-  x.fillStyle=C.ink; x.fillRect(0,0,W,150);
+  const F = (w,s)=>`${w} ${s}px "Noto Serif JP","Hiragino Sans",sans-serif`;
+  x.fillStyle="#FFF5F8"; x.fillRect(0,0,W,H);
+  x.fillStyle="#C2185B"; x.fillRect(0,0,W,150);
+  if (LOGO.complete && LOGO.naturalWidth) x.drawImage(LOGO, W-pad-200, 28, 200, 200*LOGO.naturalHeight/LOGO.naturalWidth);
   x.fillStyle="#fff"; x.font=F(700,50); x.fillText(`${mode==="face"?"小顔矯正":"姿勢（仙骨矯正）"} ビフォーアフター`, pad, 82);
   x.font=F(400,26); x.globalAlpha=.8;
   x.fillText([`${$("cName").value?$("cName").value+" 様":""}`, $("cStore").value, $("cDate").value].filter(Boolean).join("　｜　")+"　｜　POWWOW", pad, 126); x.globalAlpha=1;
