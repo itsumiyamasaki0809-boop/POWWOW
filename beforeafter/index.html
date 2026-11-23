@@ -109,6 +109,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .iss.health{background:#e9f3f8}.iss.health b{background:#2f7fa3}.iss.health li{color:#23688a}
 @media(max-width:600px){.issues{grid-template-columns:minmax(0,1fr)}}
 .refwrap{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:center}
+.sac{padding:2px 10px;border-radius:999px;font-weight:700}.sac.ng{background:#fde3df;color:#b8321f}.sac.ok{background:#e3f3ec;color:var(--ok)}
 .refwrap .side{display:flex;flex-direction:column;gap:10px}.refwrap .explain{margin-top:0}
 .refimg{width:100%;height:auto;border-radius:14px;display:block}
 .refbox{position:relative;container-type:inline-size}
@@ -320,7 +321,8 @@ const DEFS = {
     {k:"headFwd", label:"頭の前方突出（ストレートネック傾向）", kind:"deg", tol:1.5, talk:"頭が前に出ている角度"},
     {k:"trunk", label:"上半身の前傾（猫背傾向）", kind:"deg", tol:1, talk:"上半身の前傾"},
     {k:"pelvisShift", label:"骨盤の前後のずれ", kind:"deg", tol:.8, talk:"骨盤の前後のずれ"},
-    {k:"plumb", label:"重心線（くるぶし〜耳）のずれ", kind:"deg", tol:.6, talk:"重心線のずれ"}
+    {k:"plumb", label:"重心線（くるぶし〜耳）のずれ", kind:"deg", tol:.6, talk:"重心線のずれ"},
+    {k:"sacrum", label:"仙骨・骨盤の傾き", kind:"deg", tol:1, talk:"仙骨・骨盤の傾き"}
   ],
   // 小顔：リフトアップ / 目の大きさ / 肌トーン（mmは瞳孔間距離62mmと仮定した推定値）
   "face-front":[
@@ -342,10 +344,14 @@ const DEFS = {
 // bad:"abs" = 値の絶対値が大きいほど注意 / "low" = 値が小さいほど注意
 const RISKS = {
   "posture-side":[
+    {k:"sacrum", beauty:v=>v<0?["下腹ぽっこり","お尻が下がって平らに"]:["下腹ぽっこり","前ももの張り"], health:v=>v<0?["腰の重だるさ・腰痛","骨盤まわりの冷え・むくみ"]:["反り腰による腰痛","股関節への負担"], bad:"abs", warn:6, alert:12,
+      title:v=>v<0?"仙骨（骨盤）が後ろに傾いています":"仙骨（骨盤）が前に傾いています（反り腰傾向）",
+      risks:v=>v<0?["骨盤が後ろに倒れ、背中が丸まりやすい","下腹が出て、お尻が下がって見えやすい"]:["腰が反って腰に負担がかかりやすい","下腹が前に出て見えやすい"],
+      future:v=>v<0?"骨盤の後傾が定着し、背中が丸まった姿勢に":"反り腰が定着し、腰の重だるさが抜けにくい体に"},
     {k:"headFwd", beauty:["二重あご・フェイスラインのたるみ","首のシワ・デコルテのくすみ"], health:["慢性的な首・肩こり","頭痛・目の疲れ"], bad:"abs", warn:10, alert:18, title:"頭が前に出ています（ストレートネック傾向）",
       risks:["首・肩のこりが慢性化しやすい","あご下に肉がつき、二重あご・フェイスラインのたるみにつながりやすい","頭の重さで背中が丸まり、猫背が進みやすい"],
       future:"首が前に出たまま固まり、二重あごや顔のたるみが目立つように"},
-    {k:"trunk", beauty:["ぽっこりお腹・腰回りの肉","背中・二の腕のぜい肉"], health:["呼吸が浅く代謝ダウン（痩せにくい）","肩こり・腰の重だるさ"], bad:"abs", warn:4, alert:8, title:"上半身が前に傾いています（猫背傾向）",
+    {k:"trunk", beauty:["ぽっこりお腹・腰回りの肉","背中・二の腕のぜい肉"], health:["呼吸が浅く代謝ダウン（痩せにくい）","肩こり・腰の重だるさ"], bad:"abs", warn:4, alert:8, title:v=>v>=0?"上半身が前に傾いています（猫背傾向）":"上半身が後ろに反っています（スウェイバック・猫背傾向）",
       risks:["呼吸が浅くなり、代謝が落ちて痩せにくくなりやすい","お腹の力が抜け、ぽっこりお腹・腰回りに肉がつきやすい","背中や二の腕に脂肪がつきやすく、老けた印象に見えやすい"],
       future:"猫背が進み、お腹や腰回りに肉がついて、痩せにくく太りやすい体に"},
     {k:"pelvisShift", beauty:v=>v>0?["下腹ぽっこり","お尻のたるみ・太もも前の張り"]:["下腹ぽっこり","太もも前の張り・脚の太見え"], health:v=>v>0?["腰への負担・腰痛","冷え・むくみ"]:["反り腰による腰痛","股関節への負担"], bad:"abs", warn:3, alert:6,
@@ -482,6 +488,8 @@ function computeMetrics(mode, view, lm, w, h){
     m.trunk = leanV(hip, sh)*dir;
     m.pelvisShift = leanV(ank, hip)*dir;
     m.plumb = leanV(ank, ear)*dir;
+    const knee=p(s.knee);
+    m.sacrum = (leanV(hip, sh) - leanV(knee, hip))*dir; // − = 後傾（仙骨が寝る） / + = 前傾（反り腰）
     ref.scale = (ank.y - nose.y)/h; ref.sw = dist(p(11),p(12))/(ank.y-nose.y); ref.dir = dir;
     ref.full = [0,s.ank,s.sh,s.hip].every(i=>lm[i].visibility>.5 && lm[i].y>0.01 && lm[i].y<0.99);
   }
@@ -491,6 +499,7 @@ function computeMetrics(mode, view, lm, w, h){
 function dirText(groupK, k, v){
   if (Math.abs(v) < .3) return "";
   if (groupK==="posture-front" || k==="eye") return v>0 ? "向かって右下がり" : "向かって左下がり";
+  if (k==="sacrum") return v>0 ? "前傾ぎみ（反り腰）" : "後傾ぎみ（仙骨が寝ている）";
   if (groupK==="posture-side") return v>0 ? "前方" : "後方";
   return "";
 }
@@ -615,6 +624,12 @@ function drawOverlay(ctx, lm, mode, view, T, opt){
       if(show("headFwd")) label(ctx, `頭 ${metrics.headFwd.toFixed(1)}°`, pts[0].x+off, pts[0].y, color, fs);
       if(show("trunk")) label(ctx, `上体 ${metrics.trunk.toFixed(1)}°`, pts[1].x+off, pts[1].y+fs, color, fs);
       if(show("pelvisShift")) label(ctx, `骨盤 ${metrics.pelvisShift.toFixed(1)}°`, pts[2].x+off, pts[2].y, color, fs);
+      if(show("sacrum") && metrics.sacrum!=null) label(ctx, `仙骨 ${Math.abs(metrics.sacrum).toFixed(1)}° ${metrics.sacrum<0?"後傾":"前傾"}`, pts[2].x+off, pts[2].y+fs*1.6, color, fs);
+    }
+    if (metrics && metrics.sacrum!=null){ // 仙骨（骨盤）の向きを示す短い線
+      const hp=pts[2], dirF = T(lm[0]).x > pts[0].x ? 1 : -1, a=(metrics.sacrum*dirF)*Math.PI/180, L=fs*2.2;
+      ctx.save(); ctx.strokeStyle="#e8475f"; ctx.lineWidth=lw*1.4; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(hp.x-Math.cos(a)*L, hp.y-Math.sin(a)*L); ctx.lineTo(hp.x+Math.cos(a)*L, hp.y+Math.sin(a)*L); ctx.stroke(); ctx.restore();
     }
   }
   ctx.restore();
@@ -1178,6 +1193,7 @@ function chooseCallouts(all, flags, defaults, n=3){
   return all.filter(c=>keys.includes(c.k));
 }
 const TWO_PICK = {
+  sacrum:{b:["belly"], h:["lowB"]},
   headFwd:{b:["chin"], h:["neckB"]}, trunk:{b:["belly","bust"], h:["upperB"]}, pelvisShift:{b:["belly","thighF"], h:["lowB"]}, plumb:{b:["thighF"], h:["calf"]},
   shoulder:{b:["face"], h:["shoulderL"]}, pelvis:{b:["hip","belly"], h:["lowL"]}, head:{b:["face"], h:["neckF"]}, axis:{b:["knee"], h:["lowL"]}
 };
@@ -1244,12 +1260,20 @@ function guideImg(view){
   }
   return GUIDE[view];
 }
-function sideRefHtml(flags){
+function sideRefHtml(flags, m){
   const c=chooseTwoSided(SIDE_CAT, flags, SIDE_DEF), li=sd=>c.filter(x=>x.side===sd).map(x=>`<span>${x.t}</span>`).join("");
+  const v=m&&m.sacrum, st = v==null ? "" : Math.abs(v)<6 ? "ほぼまっすぐ" : v<0 ? "後ろに傾きぎみ" : "前に傾きぎみ（反り腰）";
   return `<div class="refwrap"><img class="refimg" src="posture-side.jpg" alt="背すじを伸ばした姿勢と、背中が丸まった姿勢の比較イラスト">
-    <div class="yourcase"><h5>あなたの場合、このままだと…</h5>
-      <div class="yc h"><b>健康面</b>${li("h")}</div>
-      <div class="yc b"><b>美容面</b>${li("b")}</div></div></div>`;
+    <div class="side">
+      <div class="explain"><h5>姿勢の土台は「仙骨」</h5><ol>
+        <li><b>仙骨（骨盤）が後ろに傾く</b> → 背中が丸まる</li>
+        <li><b>背中が丸まる</b> → 頭が前に出る</li>
+        <li><b>骨盤まわりが固まる</b> → 下腹・お尻・腰に影響</li></ol>
+        ${st?`<p>あなたの仙骨：<span class="sac ${Math.abs(v)<6?"ok":"ng"}">${st}${Math.abs(v)>=6?`（${Math.abs(v).toFixed(1)}°）`:""}</span></p>`:""}
+        <p>→ 土台の仙骨から整えるのが近道</p></div>
+      <div class="yourcase"><h5>あなたの場合</h5>
+        <div class="yc h"><b>健康面</b>${li("h")}</div>
+        <div class="yc b"><b>美容面</b>${li("b")}</div></div></div></div>`;
 }
 function faceRefHtml(list){
   const li=k=>pick(list,k).map(x=>`<span>${x}</span>`).join("");
@@ -1307,7 +1331,7 @@ function showCheck(){
         </div>
       </div></div>
       ${mode==="posture" && v==="front" ? "" : `<h4 class="futHead">このままだと…</h4>
-      ${mode==="face" ? faceRefHtml(list) : sideRefHtml(flagged)}`}`;
+      ${mode==="face" ? faceRefHtml(list) : sideRefHtml(flagged, b.m)}`}`;
     body.appendChild(blk);
     const cv2=blk.querySelector("canvas");
     const {x,T}=drawShot(cv2,b,mode,v,C.before,700);
