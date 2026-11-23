@@ -100,6 +100,28 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .legend2{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin:8px 2px 0;color:var(--sub)}
 .legend2 i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px;opacity:.75}
 @media(max-width:600px){.illus{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.illus .fut{grid-column:1/-1}}
+.top1{border-radius:16px;padding:14px 16px;margin-bottom:12px;background:#fff;border:2px solid var(--pink)}
+.top1.ok{border-color:#9fd2bb}
+.top1 .lbl{display:inline-block;background:var(--pink);color:#fff;font-size:13px;font-weight:700;padding:2px 12px;border-radius:999px}
+.top1.ok .lbl{background:var(--ok)}
+.top1 h4{margin:8px 0 6px;font-size:20px;color:var(--pinkd);line-height:1.4}
+.top1 .ev{margin:0 0 8px;font-size:16px;font-weight:700}
+.top1 .ev b{display:inline-block;font-size:12px;color:var(--pinkd);border:1px solid var(--pink);border-radius:6px;padding:0 6px;margin-right:8px;vertical-align:2px}
+.chain{list-style:none;margin:0;padding:0;counter-reset:c}
+.chain li{position:relative;padding:6px 10px 6px 34px;background:var(--pale);border-radius:10px;margin-bottom:18px;font-size:15px}
+.chain li::before{counter-increment:c;content:counter(c);position:absolute;left:8px;top:7px;width:20px;height:20px;border-radius:50%;background:var(--pink);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.chain li:not(:last-child)::after{content:"↓";position:absolute;left:14px;bottom:-18px;color:var(--pink);font-weight:700}
+.chain li:last-child{margin-bottom:0;background:#fde3ea;font-weight:700}
+.symsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.symsel b{width:100%;font-size:14px;color:var(--pinkd)}
+.symbtn{min-height:44px;padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);cursor:pointer;font-size:14px}
+.symbtn[aria-pressed=true]{background:var(--pink);border-color:var(--pink);color:#fff;font-weight:700}
+.symlink{background:#fff7f9;border:1px solid #f6c6d4;border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.symlink h5{margin:0 0 8px;font-size:16px;color:var(--pinkd)}
+.symlink p{margin:0 0 10px;font-size:15px;line-height:1.6}
+.symlink .sy{display:inline-block;background:var(--pink);color:#fff;font-size:12px;font-weight:700;padding:1px 10px;border-radius:999px;margin-right:6px}
+.symlink b{color:var(--pinkd)}
+.symlink .close{margin:0;font-weight:700}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .tag{font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px}
 .tag.alert{background:#fde3df;color:#b8321f}.tag.warn{background:#fdf0d8;color:#9a6110}.tag.ok{background:#e3f3ec;color:var(--ok)}
@@ -164,6 +186,7 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
   <div class="cust">
     <input id="cName" placeholder="お客様名" autocomplete="off">
     <input id="cStore" placeholder="店舗名" autocomplete="off">
+    <input id="cHeight" type="number" inputmode="numeric" placeholder="身長cm" min="120" max="200" style="width:96px">
     <input id="cDate" type="date">
   </div>
 </header>
@@ -1308,6 +1331,124 @@ function illusHtml(mode, view, m, flags){
     <p>→ 姿勢と顔まわりのこりを一緒に整えると、フェイスラインがすっきりしやすくなります。</p></div>` : ""}`;
 }
 
+
+// ---------- 一番の課題：写真からの根拠 ----------
+// 身長が未入力なら158cmと仮定（鼻〜くるぶし ≒ 身長の0.87）
+function pxPerCm(shot){
+  const hcm = +($("cHeight") && $("cHeight").value) || 158;
+  const s=sideOf(shot.lm), nose=P(shot.lm,0,shot.w,shot.h), ank=P(shot.lm,s.ank,shot.w,shot.h);
+  return (ank.y-nose.y)/(hcm*.87);
+}
+function topIssue(list){ return list.find(r=>r.lv==="alert"||r.lv==="warn") || null; }
+function evidence(shot, mode, top){
+  const m=shot.m, f1=v=>Math.abs(v).toFixed(1);
+  if (mode==="face"){
+    if (!top) return {lead:`フェイスライン（エラ下）は目のラインから約${f1(m.jaw)}mm、頬は約${f1(m.cheek)}mmの位置にあります。`,
+      chain:["首・肩のこりで顔まわりの流れが滞る","むくみ・こわばりで頬やあご下に重みがたまる","頬が下がり、輪郭がぼやけて見える"]};
+    if (top.k==="mouth") return {lead: m.mouth<0 ? `口角が唇の中心より約${f1(m.mouth)}mm下がっています。` : `口角の上がりが約${f1(m.mouth)}mmと小さめです。`,
+      chain:["口まわりの筋肉がこわばり、口角が下がる","頬の重みを支えきれなくなる","ほうれい線・フェイスラインのたるみにつながりやすい"]};
+    if (top.k==="eyeTail") return {lead: m.eyeTail<0 ? `目尻が目頭より${f1(m.eyeTail)}°下がっています。` : `目尻の上がりが${f1(m.eyeTail)}°と小さめです。`,
+      chain:["おでこ・こめかみの筋肉がこわばる","まぶたや目元の皮膚が下に引っぱられる","疲れ顔・老け見えにつながりやすい"]};
+    if (top.k==="eyeOpen") return {lead:`目の縦幅が約${f1(m.eyeOpen)}mmと小さめです。`,
+      chain:["おでこ・頭のこりでまぶたを持ち上げにくくなる","目元にむくみがたまりやすい","目が小さく、眠そうな印象に見えやすい"]};
+  }
+  const s=sideOf(shot.lm), p=i=>P(shot.lm,i,shot.w,shot.h), k=pxPerCm(shot);
+  const nose=p(0), ear=p(s.ear), sh=p(s.sh), hip=p(s.hip), ank=p(s.ank), dir=nose.x>ear.x?1:-1;
+  const cm=(a,b)=>((a.x-b.x)*dir/k);
+  const fb=v=>v>=0?"前":"後ろ";
+  if (!top) return {lead:`耳・肩・骨盤・くるぶしがほぼ一直線に並んでいます（耳とくるぶしのずれ 約${f1(cm(ear,ank))}cm）。`, chain:["今のバランスを保つには、土台の仙骨をゆがませないことが大切です"]};
+  switch(top.k){
+    case "headFwd": { const d=cm(ear,sh); return {lead:`耳が肩の真上より約${f1(d)}cm${fb(d)}に出ていて、首が${f1(m.headFwd)}°傾いています。`,
+      chain:["頭の重さ（約5kg）を首・肩が前から支え続ける","首・肩の筋肉が常に緊張してこる","引っぱられて背中が丸まり、あご下にお肉がつきやすい"]}; }
+    case "trunk": { const d=cm(sh,hip); return {lead:`肩が骨盤の真上より約${f1(d)}cm${fb(d)}にあり、上半身が${f1(m.trunk)}°傾いています。`,
+      chain:["上半身の重みがお腹にのしかかる","お腹の力が抜け、呼吸も浅くなる","下腹ぽっこり・代謝ダウンで痩せにくくなりやすい"]}; }
+    case "sacrum": return {lead:`上半身と太ももの角度から、仙骨（骨盤）が約${f1(m.sacrum)}°${m.sacrum<0?"後ろに倒れて":"前に傾いて"}いると推定されます。`,
+      chain: m.sacrum<0 ? ["仙骨が後ろに倒れ、背骨のS字カーブが崩れる","背中が丸まり、頭が前に出る","下腹が出て、お尻が下がって見えやすい"]
+                        : ["仙骨が前に傾き、腰が反る","腰の筋肉に負担が集中する","下腹が前に出て、前ももが張りやすい"]};
+    case "pelvisShift": { const d=cm(hip,ank); return {lead:`骨盤がくるぶしの真上より約${f1(d)}cm${fb(d)}にずれています。`,
+      chain: d>=0 ? ["骨盤が前に出て、上半身は後ろに反ってバランスを取る","お腹が前に突き出し、腰に負担がかかる","下腹ぽっこり・お尻のたるみにつながりやすい"]
+                  : ["お尻が後ろに引け、腰が反る","腰と前ももに負担が集中する","腰痛・前ももの張りにつながりやすい"]}; }
+    case "plumb": { const d=cm(ear,ank); return {lead:`耳がくるぶしの真上より約${f1(d)}cm${fb(d)}にずれています（理想は一直線）。`,
+      chain:["体の重心がずれる","ふくらはぎや前ももが常に踏ん張る","脚の張り・むくみが抜けにくくなる"]}; }
+  }
+  return {lead:"", chain:[]};
+}
+function topHtml(shot, mode, top){
+  const e=evidence(shot, mode, top);
+  return `<div class="top1 ${top?top.lv:"ok"}">
+    <span class="lbl">${top?"一番の課題":"チェック結果"}</span>
+    <h4>${top?top.title:"大きな崩れは見られません"}</h4>
+    <p class="ev"><b>写真から</b>${e.lead}</p>
+    ${e.chain.length?`<ol class="chain">${e.chain.map(c=>`<li>${c}</li>`).join("")}</ol>`:""}
+  </div>`;
+}
+// 写真に根拠を描く（赤）
+function drawEvidence(ctx, shot, mode, view, T, top){
+  const col="#E91E63", lw=4, fs=22;
+  ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=lw; ctx.lineCap="round";
+  const line=(a,b,w=lw,dash)=>{ctx.setLineDash(dash||[]);ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);};
+  const dot=(a,r=6)=>{ctx.beginPath();ctx.arc(a.x,a.y,r,0,Math.PI*2);ctx.fill();};
+  const arrow=(a,b)=>{ line(a,b,lw); const ang=Math.atan2(b.y-a.y,b.x-a.x); [a,b].forEach((q,i)=>{const s=i?1:-1, h=12; ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(q.x-s*h*Math.cos(ang-.5),q.y-s*h*Math.sin(ang-.5)); ctx.lineTo(q.x-s*h*Math.cos(ang+.5),q.y-s*h*Math.sin(ang+.5)); ctx.closePath(); ctx.fill();}); };
+  const tag=(t,x,y)=>label(ctx,t,x,y,col,fs);
+  const lm=shot.lm, t=i=>T(lm[i]);
+  if (mode==="face"){
+    if (!top || top.k==="mouth"){
+      if (!top){ [172,397].forEach(i=>dot(t(i))); line(t(172),t(397),3,[8,6]); }
+      else { const c=mid(t(13),t(14)); line({x:t(61).x-20,y:c.y},{x:t(291).x+20,y:c.y},3,[8,6]); [61,291].forEach(i=>{ arrow({x:t(i).x,y:c.y},t(i)); }); tag(`口角 ${Math.abs(shot.m.mouth).toFixed(1)}mm`, t(291).x+24, c.y+8); }
+    } else if (top.k==="eyeTail" || top.k==="eyeOpen"){
+      [[133,33,159,145],[362,263,386,374]].forEach(([a,b,u,d])=>{ if(top.k==="eyeTail"){ line(t(a),t(b)); line(t(a),{x:t(b).x,y:t(a).y},3,[8,6]); } else { arrow(t(u),t(d)); } });
+      tag(top.k==="eyeTail"?`目尻 ${shot.m.eyeTail.toFixed(1)}°`:`目の縦幅 ${shot.m.eyeOpen.toFixed(1)}mm`, t(263).x+24, t(263).y-20);
+    }
+    ctx.restore(); return;
+  }
+  const s=sideOf(lm), ear=t(s.ear), sh=t(s.sh), hip=t(s.hip), knee=t(s.knee), ank=t(s.ank);
+  const vert=(q,len)=>line(q,{x:q.x,y:q.y-len},3,[8,6]);
+  if (!top){ line(ank,{x:ank.x,y:ear.y-30},3,[8,6]); [ear,sh,hip,ank].forEach(q=>dot(q)); ctx.restore(); return; }
+  switch(top.k){
+    case "headFwd": vert(sh, sh.y-ear.y+30); line(sh,ear); dot(sh); dot(ear); arrow({x:sh.x,y:ear.y},ear); tag(`首 ${Math.abs(shot.m.headFwd).toFixed(1)}°`, Math.max(ear.x,sh.x)+16, ear.y-14); break;
+    case "trunk": vert(hip, hip.y-sh.y+30); line(hip,sh); dot(hip); dot(sh); arrow({x:hip.x,y:sh.y},sh); tag(`上体 ${Math.abs(shot.m.trunk).toFixed(1)}°`, Math.max(sh.x,hip.x)+16, sh.y+8); break;
+    case "sacrum": { line(sh,hip,3); line(hip,knee,3); dot(hip,8); const a=(shot.m.sacrum*(t(0).x>ear.x?1:-1))*Math.PI/180, L=46; line({x:hip.x-Math.cos(a)*L,y:hip.y-Math.sin(a)*L},{x:hip.x+Math.cos(a)*L,y:hip.y+Math.sin(a)*L},7); tag(`仙骨 ${Math.abs(shot.m.sacrum).toFixed(1)}° ${shot.m.sacrum<0?"後傾":"前傾"}`, hip.x+54, hip.y+8); break; }
+    case "pelvisShift": vert(ank, ank.y-hip.y+30); dot(hip); dot(ank); arrow({x:ank.x,y:hip.y},hip); tag(`骨盤のずれ`, Math.max(hip.x,ank.x)+16, hip.y+8); break;
+    case "plumb": vert(ank, ank.y-ear.y+30); dot(ear); dot(ank); arrow({x:ank.x,y:ear.y},ear); tag(`重心線のずれ`, Math.max(ear.x,ank.x)+16, ear.y+8); break;
+  }
+  ctx.restore();
+}
+
+
+// ---------- カウンセリングシートのお悩み（なんとなく不調）との連動 ----------
+const SYMPTOMS = [
+  {k:"sleep", t:"寝ても疲れが取れない・眠りが浅い"},
+  {k:"dull",  t:"朝からだるい・やる気が出ない"},
+  {k:"mood",  t:"イライラしやすい・気分が沈みやすい"},
+  {k:"body",  t:"肩こり・首こり・むくみ・冷え・便秘"}
+];
+S.sym = new Set();
+const SHORT = {headFwd:"頭が前に出た姿勢", trunk:"上半身の傾き", sacrum:"仙骨（骨盤）の傾き", pelvisShift:"骨盤のずれ", plumb:"重心線のずれ", mouth:"口元のこわばり", eyeTail:"目元の下がり", eyeOpen:"目元の重さ"};
+function symLink(mode, top, k){
+  const face = mode==="face";
+  const R = {
+    sleep: face ? "首・肩や顔まわりがこわばったままだと、体がリラックスしにくく、寝ても疲れが残りやすくなります。"
+                : "背中が丸まると呼吸が浅くなり、体が休まりにくく、寝ても疲れが残りやすくなります。",
+    dull:  face ? "顔まわりの血流・リンパが滞ると、むくみや重だるさを感じやすくなります。"
+                : "ゆがんだ姿勢を支えるために、立っているだけで筋肉が疲れ、朝からだるさを感じやすくなります。",
+    mood:  "仙骨は自律神経の通り道。骨盤まわりが固まると、自律神経のバランスが乱れやすいと言われています。",
+    body:  face ? "首・肩のこりで顔まわりの流れが滞ると、むくみ・冷えにもつながりやすくなります。"
+                : "首・肩に負担がかかってこり、骨盤まわりの血流が滞ると、冷え・むくみ・便秘にもつながりやすくなります。"
+  };
+  return R[k];
+}
+function symHtml(mode, top){
+  if (!S.sym.size) return "";
+  const what = top ? SHORT[top.k] || "姿勢のくずれ" : (mode==="face" ? "顔まわりのこわばり" : "姿勢のくせ");
+  return `<div class="symlink"><h5>あなたのお悩みとのつながり</h5>
+    ${SYMPTOMS.filter(x=>S.sym.has(x.k)).map(x=>`<p><span class="sy">${x.t}</span>写真の<b>「${what}」</b>とつながっている可能性があります。${symLink(mode,top,x.k)}</p>`).join("")}
+    <p class="close">→ 土台の仙骨から整えることで、姿勢と一緒にこうした不調にもアプローチします。</p></div>`;
+}
+function symSelectHtml(){
+  return `<div class="symsel"><b>カウンセリングで選んだお悩み</b>
+    ${SYMPTOMS.map(x=>`<button type="button" class="symbtn" data-k="${x.k}" aria-pressed="${S.sym.has(x.k)}">${x.t}</button>`).join("")}</div>`;
+}
+
 // ---------- 現状チェック画面 ----------
 function pick(list, kind){ const out=[]; for(let i=0;i<2;i++) list.forEach(r=>{ const x=(r[kind]||[])[i]; if(x && !out.includes(x)) out.push(x); }); return out.slice(0,2); } // 各課題の1番目を優先して混ぜる
 function showCheck(){
@@ -1316,17 +1457,21 @@ function showCheck(){
   $("chkTitle").textContent = `${$("cName").value ? $("cName").value+" 様　" : ""}現状チェック（${mode==="face"?"小顔":"姿勢"}）`;
   const body=$("chkBody"); body.innerHTML="";
   if (!views.length){ body.innerHTML='<p class="note">Before を撮影すると、ここに現状チェックが表示されます。</p>'; return; }
+  body.insertAdjacentHTML("beforeend", symSelectHtml());
+  body.querySelectorAll(".symbtn").forEach(b=>b.onclick=()=>{ const k=b.dataset.k; S.sym.has(k)?S.sym.delete(k):S.sym.add(k); const y=window.scrollY; showCheck(); window.scrollTo(0,y); });
   const futures=[];
   views.forEach(v=>{
     const b=S.shots[key(mode,v,"before")], gk=groupKey(mode,v), list=evalRisks(gk,b.m);
     list.forEach(r=>{ if(r.future && !futures.includes(r.future)) futures.push(r.future); });
     const name = mode==="face" ? "お顔（正面）" : v==="front" ? "正面（左右バランス）" : "側面（前後バランス）";
     const blk=document.createElement("div"); blk.className="viewBlock";
-    const flagged=list.filter(r=>r.lv!=="info");
+    const flagged=list.filter(r=>r.lv!=="info"), top=topIssue(list);
     blk.innerHTML = `<h3>${name}</h3>
       <div class="pair"><figure><canvas></canvas>
-        <div class="legend"><span style="--c:${C.before}">今のあなた</span><span style="--c:#d23c2a">このままだと…（イメージ）</span></div></figure>
+        <div class="legend"><span style="--c:${C.before}">今のあなた</span><span style="--c:#E91E63">一番の課題の根拠</span></div></figure>
       <div>
+        ${topHtml(b, mode, top)}
+        ${symHtml(mode, top)}
         <div class="tags">${flagged.length ? flagged.map(r=>`<span class="tag ${r.lv}">${r.lv==="alert"?"要注意":"注意"}｜${r.title}</span>`).join("") : `<span class="tag ok">大きな崩れは見られません</span>`}</div>
         <div class="issues">
           <div class="iss beauty"><b>美容面の課題</b><ul>${pick(list,"beauty").map(x=>`<li>${x}</li>`).join("")||"<li>今の状態をキープしましょう</li>"}</ul></div>
@@ -1339,7 +1484,7 @@ function showCheck(){
     const cv2=blk.querySelector("canvas");
     const {x,T}=drawShot(cv2,b,mode,v,C.before,700);
     drawOverlay(x,b.lm,mode,v,T,{color:C.before,scale:1,labels:false});
-    drawFuture(x,b.lm,mode,v,T,1,b.m);
+    drawEvidence(x,b,mode,v,T,top);
   });
 }
 
@@ -1404,7 +1549,7 @@ $("shareBtn").onclick=()=>{ buildExport().toBlob(async b=>{
   try{ if(navigator.canShare && navigator.canShare({files:[f]})) await navigator.share({files:[f], title:"ビフォーアフター"}); else $("exportBtn").click(); }catch(e){}
 },"image/png"); };
 $("resetBtn").onclick=()=>{ if(!confirm("撮影データを消去して次のお客様へ進みますか？（保存していない画像は消えます）")) return;
-  S.shots={}; S.view = S.mode==="face" ? "front" : "side"; S.phase="before"; $("cName").value=""; $("consent").checked=false; $("adOk").checked=false; setModeUI(S.mode); };
+  S.shots={}; S.sym=new Set(); S.view = S.mode==="face" ? "front" : "side"; S.phase="before"; $("cName").value=""; $("consent").checked=false; $("adOk").checked=false; setModeUI(S.mode); };
 
 renderUI();
 </script>
