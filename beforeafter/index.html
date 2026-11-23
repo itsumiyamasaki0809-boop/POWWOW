@@ -128,7 +128,11 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .gallery-item{background:#fff;padding:.5rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
 .ba-slider{position:relative;width:100%;aspect-ratio:560/676;overflow:hidden;border-radius:4px;user-select:none;touch-action:pan-y;cursor:ew-resize;background:#eee}
 .ba-slider img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
-.gallery-container.body{grid-template-columns:minmax(0,1fr);max-width:460px}
+.bodypair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;max-width:760px;margin:2rem auto 0}
+.bodypair figure{margin:0;position:relative;background:#fff;padding:.5rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.bodypair img{width:100%;height:auto;display:block;border-radius:4px}
+.bodypair .ba-tag{top:1rem}.bodypair .ba-tag-before{left:1rem}.bodypair .ba-tag-after{right:auto;left:1rem}
+.bodypair figcaption{text-align:center;font-weight:500;font-size:.92rem;line-height:1.6;margin:.6rem 0 .2rem}
 .ba-slider.tall{aspect-ratio:2/3}
 .ba-slider .ba-before{clip-path:inset(0 calc(100% - var(--p)) 0 0)}
 .ba-tag{position:absolute;top:.5rem;font-weight:500;font-size:1rem;letter-spacing:.05em;color:#fff;background:rgba(194,24,91,.85);padding:.3rem .85rem;border-radius:3px;z-index:3;pointer-events:none}
@@ -362,7 +366,7 @@ const $ = id => document.getElementById(id);
 const C = {before:"#9C6B84", after:"#E91E63", ink:"#4A041E", ok:"#2f8f6a", warn:"#c9821c"};
 const LOGO = new Image(); LOGO.src = "powwow-logo.png";
 // 古い版がブラウザに残っていたら、最新版に自動で切り替える
-const APP_VER = "20261123-1800";
+const APP_VER = "20261123-1805";
 fetch(location.pathname + "?nc=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).then(t=>{
   const m = t.match(/const APP_VER = "([^"]+)"/);
   if (m && m[1] !== APP_VER && !sessionStorage.getItem("reloaded-"+m[1])) {
@@ -1543,8 +1547,9 @@ function careFlowHtml(mode){
       ${item("50代","case50-before.jpg","case50-after.jpg","ふけ顔・顔色が悪い・たるみ・疲れ顔","表情が明るい・目がぱっちり・たるみがきゅっと！・小顔")}
     </div>
     <p class="gallery-note">この変化は、顔だけを施術した結果ではありません。<br>3ヶ月かけて土台である仙骨から整えたことで、心身ともに健やかになり、本来の美しさが引き出された結果です。</p>` : `<p class="reason-question">どちらの姿勢で生活したいですか？</p>
-    <div class="gallery-container body">
-      ${item("","body-before.jpg","body-after.jpg","背中の丸み・頭が前に出る・下腹ぽっこり","背すじが伸びる・お腹すっきり・ヒップの位置が上がる", true)}
+    <div class="bodypair">
+      <figure><span class="ba-tag ba-tag-before">施術前</span><img src="body-before.jpg" alt="施術前の姿勢（横向き）"><figcaption class="before-state">背中の丸み・頭が前に出る・下腹ぽっこり</figcaption></figure>
+      <figure><span class="ba-tag ba-tag-after">施術後</span><img src="body-after.jpg" alt="施術後の姿勢（横向き）"><figcaption class="after-state">背すじが伸びる・お腹すっきり・ヒップの位置が上がる</figcaption></figure>
     </div>
     <p class="gallery-note">姿勢の変化は、その場で背すじを伸ばしただけでは続きません。<br>土台である仙骨から整えることで、きれいな姿勢が自然と保てる体へ変わっていきます。</p>`}
     <div class="care-chart-section"><h2 class="section-title">3ヶ月で、根本から変わる。</h2>
