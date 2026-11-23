@@ -89,15 +89,15 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .risk.alert .lv{background:var(--bad)}.risk.warn .lv{background:var(--warn)}.risk.info .lv{background:var(--sub)}
 .risk ul{margin:4px 0 0;padding-left:1.2em}.risk li{margin:2px 0}
 .risk small{color:var(--sub)}
-.illus{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.85fr);gap:6px 10px;align-items:end;background:#fbf9f7;border:1px solid var(--line);border-radius:14px;padding:12px 12px 4px;margin-top:4px}
+.illus{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,2.3fr);gap:6px 10px;align-items:end;background:#fbf9f7;border:1px solid var(--line);border-radius:14px;padding:12px 12px 4px;margin-top:4px}
 .illus figure{margin:0;text-align:center;position:relative}
 .illus figcaption{font-weight:700;font-size:14px;margin-bottom:4px}
 .illus svg{width:100%;height:auto;display:block;font-family:inherit}
 .illus figure+figure:not(.fut)::after{content:"";}
-.illus .fut{border-left:2px dashed #e7b3a8;padding-left:8px}
+.illus figure{border-radius:12px;padding:8px 4px 0}.illus figure:first-child{background:#fdf0f2}.illus .fut{background:#eaf3f9}
 .legend2{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin:8px 2px 0;color:var(--sub)}
 .legend2 i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px;opacity:.75}
-@media(max-width:600px){.illus{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.illus .fut{grid-column:1/-1;border-left:0;border-top:2px dashed #e7b3a8;padding:8px 0 0}}
+@media(max-width:600px){.illus{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.illus .fut{grid-column:1/-1}}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .tag{font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px}
 .tag.alert{background:#fde3df;color:#b8321f}.tag.warn{background:#fdf0d8;color:#9a6110}.tag.ok{background:#e3f3ec;color:var(--ok)}
@@ -951,6 +951,25 @@ function calloutSvg(list, tx, top, bottom){
   }).join("");
 }
 
+// 左右2列の吹き出し：左＝健康面（ブルー）、右＝美容面（ピンク）
+function twoSideCallouts(list, xL, xR, top, bottom){
+  const col={b:{fill:"#fdeef2",st:"#f2b8c8",tx:"#c43c62",dot:"#e05a73"}, h:{fill:"#e9f3f8",st:"#b6d6e6",tx:"#23688a",dot:"#2f7fa3"}};
+  let out=`<text x="${xL}" y="${top-14}" font-size="13" font-weight="700" fill="#2f7fa3" text-anchor="end">健康面</text><text x="${xR}" y="${top-14}" font-size="13" font-weight="700" fill="#e0567a">美容面</text>`;
+  ["h","b"].forEach(sd=>{
+    const items=list.filter(c=>c.side===sd).sort((a,b)=>a.at.y-b.at.y), ys=[];
+    items.forEach((c,i)=>{ let y=Math.max(top, c.at.y); if(i) y=Math.max(y, ys[i-1]+42); ys.push(y); });
+    const over=ys.length?ys[ys.length-1]-bottom:0; if(over>0) ys.forEach((y,i)=>ys[i]=y-over);
+    items.forEach((c,i)=>{ const w=c.t.length*15+22, y=ys[i], k=col[sd];
+      const x0 = sd==="h" ? xL-w : xR, edge = sd==="h" ? xL : xR;
+      out+=`<path d="M${fx(c.at.x)} ${fx(c.at.y)} Q${fx((c.at.x+edge)/2)} ${fx(y)} ${fx(edge)} ${fx(y)}" stroke="${k.st}" stroke-width="1.4" fill="none"/>
+        <circle cx="${fx(c.at.x)}" cy="${fx(c.at.y)}" r="3.2" fill="#fff" stroke="${k.dot}" stroke-width="1.8"/>
+        <rect x="${fx(x0)}" y="${fx(y-15)}" width="${fx(w)}" height="30" rx="15" fill="${k.fill}" stroke="${k.st}" stroke-width="1.4"/>
+        <text x="${fx(x0+11)}" y="${fx(y+5.5)}" font-size="15" font-weight="700" fill="${k.tx}">${c.t}</text>`; });
+  });
+  return out;
+}
+const OFF=(p,ox)=>({x:p.x+ox, y:p.y});
+
 // ---- 側面（右向きの女性シルエット）
 function sideFigure(q, key, zones, callouts){
   const id=++ILLN, g=ILL.body[key];
@@ -985,7 +1004,8 @@ function sideFigure(q, key, zones, callouts){
   const band=(c0,c1,c2,c3)=>`<path d="M${fx(c0.x)} ${fx(c0.y)} L${fx(c1.x)} ${fx(c1.y)} L${fx(c2.x)} ${fx(c2.y)} L${fx(c3.x)} ${fx(c3.y)}Z"/>`;
   const wearTop=band(P(L(hip,sh,.92),-45), P(L(hip,sh,.92),45), P(L(hip,sh,.52),45), P(L(hip,sh,.52),-45));
   const wearBottom=band(P(L(hip,sh,.14),-45), P(L(hip,sh,.14),45), A(L(hip,knee,.36),fT,45), A(L(hip,knee,.36),fT,-45));
-  const spine=catmull([A(neckTop,nf,-2), P(sh,-5-q.kyph*3-el*8,4), P(L(hip,sh,.8),-8-q.kyph*14-el*15), P(L(hip,sh,.56),-6.5-q.kyph*8-el*9), P(L(hip,sh,.34),-4+lord*4-el*5), P(hip,-10+el*2,-6), P(hip,-15+el*3,-18)], false);
+  const spine=catmull([A(neckTop,nf,-16), P(sh,-21-q.kyph*3-el*8,4), P(L(hip,sh,.8),-24-q.kyph*14-el*15), P(L(hip,sh,.56),-22.5-q.kyph*8-el*9), P(L(hip,sh,.34),-20+lord*4-el*5), P(hip,-34+el*4,-4)], false);
+  const spineCol = key==="future" ? "#3a57b0" : "#e8475f";
   const eye=H(12,1), lash=`<path d="M${fx(H(9,2).x)} ${fx(H(9,2).y)} Q${fx(H(12,4).x)} ${fx(H(12,4).y)} ${fx(H(15,2).x)} ${fx(H(15,2).y)}" stroke="#4e3631" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
   const sk=ILL.skin[key];
   const Z={
@@ -998,9 +1018,11 @@ function sideFigure(q, key, zones, callouts){
     thigh:{...A(L(hip,knee,.4),fT,6), rx:9, ry:22, c:"y", r:q.thigh}
   };
   const bk=upperBack;
-  const at={head:H(6,24), neck:Z.neck, upper:Z.upper, low:Z.low, belly:Z.belly, arm:Z.arm, butt:Z.butt, thigh:Z.thigh, back:bk};
-  const W = callouts ? 352 : 200;
-  return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,g)}
+  const at={head:H(6,24), neck:Z.neck, upper:Z.upper, low:Z.low, belly:Z.belly, arm:Z.arm, butt:Z.butt, thigh:Z.thigh, back:bk,
+    chin:H(9,-17), bust:P(L(hip,sh,.7-q.kyph*.06),20-q.kyph*3-el*5), thighF:A(L(hip,knee,.35),fT,12), neckB:A(neckTop,nf,-6), upperB:upperBack,
+    lowB:P(L(hip,sh,.34),-10-el*5), calf:A(L(knee,ank,.33),fS,-11)};
+  const OX = callouts ? 128 : 0, W = callouts ? 460 : 200;
+  return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,g)}<g transform="translate(${OX},0)">
     <line x1="${ank.x}" y1="424" x2="${ank.x}" y2="12" stroke="#d6c4c4" stroke-width="1.2" stroke-dasharray="4 5"/>
     <ellipse cx="${ank.x+6}" cy="420" rx="44" ry="5" fill="#c9a9b1" opacity=".22"/>
     <clipPath id="cl${id}"><path d="${body}"/></clipPath>
@@ -1009,13 +1031,13 @@ function sideFigure(q, key, zones, callouts){
     <g clip-path="url(#cl${id})" fill="${ILL.wear[key]}">${wearTop}${wearBottom}</g>
     <path d="${body}" fill="none" stroke="${ILL.line}" stroke-width="1.2"/>
     ${zoneSvg(id,(zones||[]).filter(k=>k!=="arm").map(k=>Z[k]).filter(Boolean))}
-    <path d="${spine}" fill="none" stroke="#e8475f" stroke-width="3.2" stroke-linecap="round" opacity=".85"/>
+    <path d="${spine}" fill="none" stroke="${spineCol}" stroke-width="4" stroke-linecap="round" opacity=".8"/>
     <path d="${face}" fill="${sk[0]}" stroke="${ILL.line}" stroke-width="1.1"/>
     <path d="${hair}" fill="url(#hr${id})"/>
     ${lash}<circle cx="${fx(H(5,-6).x)}" cy="${fx(H(5,-6).y)}" r="4" fill="url(#bl${id})"/>
     ${arm}
-    ${zones&&zones.includes("arm")?zoneSvg(id,[Z.arm]):""}
-    ${callouts?calloutSvg(callouts.map(c=>({t:c.t, at:at[c.k]})), 196, 30, 410):""}
+    ${zones&&zones.includes("arm")?zoneSvg(id,[Z.arm]):""}</g>
+    ${callouts?twoSideCallouts(callouts.map(c=>({t:c.t, side:c.side, at:OFF(at[c.k],OX)})), OX+18, OX+186, 46, 404):""}
   </svg>`;
 }
 
@@ -1054,10 +1076,11 @@ function frontFigure(q, key, zones, callouts){
     hipL:{x:hl.x+2, y:hl.y+16, rx:9+q.hipW*4, ry:18, c:"y"}, hipR:{x:hr.x-2, y:hr.y+16, rx:9+q.hipW*4, ry:18, c:"y"},
     thighL:{x:L(jl,kl,.45).x-5, y:282, rx:8, ry:20, c:"y"}, thighR:{x:L(jr,kr,.45).x+5, y:282, rx:8, ry:20, c:"y"}
   };
-  const at={shoulder:Z.shoulder, neck:Z.neck, spine:sp, belly:Z.belly, hip:Z.hipR, knee:ad(kr,8,0), head:ad(hc,0,-12)};
+  const at={shoulder:Z.shoulder, neck:Z.neck, spine:sp, belly:Z.belly, hip:Z.hipR, knee:ad(kr,8,0), head:ad(hc,0,-12),
+    face:ad(hc,10,4), shoulderL:{x:sl.x+6,y:sl.y+4}, lowL:{x:hl.x+8,y:hl.y-18}, neckF:{x:nt.x-6,y:nt.y+8}, calfL:ad(L(kl,al,.35),-8,0)};
   if (key==="guide") return guideSvg(`<path d="${body}"/><ellipse cx="${fx(hc.x)}" cy="${fx(hc.y)}" rx="17" ry="21"/>${arm(-1,sl).replace(/stroke="[^"]*"/g,'stroke="rgba(255,255,255,.35)"')}${arm(1,sr).replace(/stroke="[^"]*"/g,'stroke="rgba(255,255,255,.35)"')}`);
-  const W = callouts ? 352 : 200;
-  return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,g)}
+  const OX = callouts ? 128 : 0, W = callouts ? 460 : 200;
+  return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,g)}<g transform="translate(${OX},0)">
     <line x1="100" y1="424" x2="100" y2="12" stroke="#d6c4c4" stroke-width="1.2" stroke-dasharray="4 5"/>
     <line x1="40" y1="${fx(sc.y)}" x2="160" y2="${fx(sc.y)}" stroke="#d6c4c4" stroke-width="1" stroke-dasharray="3 4"/>
     <line x1="46" y1="${fx(pc.y)}" x2="154" y2="${fx(pc.y)}" stroke="#d6c4c4" stroke-width="1" stroke-dasharray="3 4"/>
@@ -1076,8 +1099,8 @@ function frontFigure(q, key, zones, callouts){
       <path d="M${fx(hc.x-9)} ${fx(hc.y+1)} q3 2 6 0 M${fx(hc.x+3)} ${fx(hc.y+1)} q3 2 6 0" stroke="#4e3631" stroke-width="1.4" fill="none" stroke-linecap="round"/>
       <circle cx="${fx(hc.x-9)}" cy="${fx(hc.y+7)}" r="4" fill="url(#bl${id})"/><circle cx="${fx(hc.x+9)}" cy="${fx(hc.y+7)}" r="4" fill="url(#bl${id})"/>
       <path d="M${fx(hc.x-3)} ${fx(hc.y+12)} q3 2 6 0" stroke="#e07a86" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    </g>
-    ${callouts?calloutSvg(callouts.map(c=>({t:c.t, at:at[c.k]})), 192, 30, 400):""}
+    </g></g>
+    ${callouts?twoSideCallouts(callouts.map(c=>({t:c.t, side:c.side, at:OFF(at[c.k],OX)})), OX+30, OX+172, 46, 404):""}
   </svg>`;
 }
 
@@ -1141,6 +1164,18 @@ function chooseCallouts(all, flags, defaults, n=3){
   defaults.forEach(k=>{ if(keys.length<n && !keys.includes(k)) keys.push(k); });
   return all.filter(c=>keys.includes(c.k));
 }
+const TWO_PICK = {
+  headFwd:{b:["chin"], h:["neckB"]}, trunk:{b:["belly","bust"], h:["upperB"]}, pelvisShift:{b:["belly","thighF"], h:["lowB"]}, plumb:{b:["thighF"], h:["calf"]},
+  shoulder:{b:["face"], h:["shoulderL"]}, pelvis:{b:["hip","belly"], h:["lowL"]}, head:{b:["face"], h:["neckF"]}, axis:{b:["knee"], h:["lowL"]}
+};
+function chooseTwoSided(catalog, flags, defaults, n=2){
+  const pick={b:[],h:[]};
+  ["b","h"].forEach(sd=>{
+    for (let round=0; round<2; round++) flags.forEach(f=>{ const k=((TWO_PICK[f.k]||{})[sd]||[])[round]; if(k && !pick[sd].includes(k) && pick[sd].length<n) pick[sd].push(k); });
+    defaults[sd].forEach(k=>{ if(pick[sd].length<n && !pick[sd].includes(k)) pick[sd].push(k); });
+  });
+  return catalog.filter(c=>pick[c.side].includes(c.k));
+}
 function illusSet(mode, view, m, flags){
   const has = k => flags.some(f=>f.k===k);
   if (mode==="face"){
@@ -1162,7 +1197,10 @@ function illusSet(mode, view, m, flags){
     return {
       ideal: sideFigure({shin:0,thigh:0,torso:0,neck:6,kyph:0,belly:0}, "ideal"),
       now: sideFigure(now, "now", nz),
-      future: (()=>{ const c=chooseCallouts([{k:"head",t:"頭が前に出る"},{k:"neck",t:"首・肩がガチガチ",z:["neck"]},{k:"back",t:"背中が丸まる",z:["upper"]},{k:"arm",t:"二の腕に脂肪",z:["arm"]},{k:"belly",t:"お腹ぽっこり",z:["belly"]},{k:"low",t:"腰に負担",z:["low"]},{k:"butt",t:"お尻が垂れる",z:["butt"]}], flags, ["back","belly","neck"]);
+      future: (()=>{ const c=chooseTwoSided([
+          {k:"chin",t:"二重あご",side:"b"},{k:"bust",t:"バストが下がる",side:"b"},{k:"belly",t:"お腹ぽっこり",side:"b",z:["belly"]},{k:"thighF",t:"前ももが張る",side:"b"},
+          {k:"neckB",t:"頭痛・首こり",side:"h",z:["neck"]},{k:"upperB",t:"肩こり",side:"h",z:["upper"]},{k:"lowB",t:"腰痛",side:"h",z:["low"]},{k:"calf",t:"冷え・むくみ",side:"h"}],
+          flags, {b:["belly","chin"], h:["upperB","lowB"]});
         return sideFigure(fut, "future", c.flatMap(x=>x.z||[]), c); })()
     };
   }
@@ -1173,7 +1211,10 @@ function illusSet(mode, view, m, flags){
   return {
     ideal: frontFigure({rs:0,rp:0,rh:0,axis:0,curve:0,hipW:0,oleg:0,belly:0}, "ideal"),
     now: frontFigure(now, "now", nz),
-    future: (()=>{ const c=chooseCallouts([{k:"head",t:"顔・首が傾く",z:["neck"]},{k:"shoulder",t:"肩の高さがズレる",z:["shoulder"]},{k:"spine",t:"背骨がゆがむ"},{k:"belly",t:"下腹ぽっこり",z:["belly"]},{k:"hip",t:"下半身太り",z:["hipL","hipR","thighL","thighR"]},{k:"knee",t:"O脚ぎみに"}], flags, ["shoulder","hip","belly"]);
+    future: (()=>{ const c=chooseTwoSided([
+        {k:"face",t:"顔のゆがみ",side:"b"},{k:"hip",t:"下半身太り",side:"b",z:["hipL","hipR","thighL","thighR"]},{k:"belly",t:"下腹ぽっこり",side:"b",z:["belly"]},{k:"knee",t:"O脚ぎみに",side:"b"},
+        {k:"shoulderL",t:"肩こり",side:"h",z:["shoulder"]},{k:"neckF",t:"首こり・頭痛",side:"h",z:["neck"]},{k:"lowL",t:"腰痛",side:"h",z:["low"]},{k:"calfL",t:"冷え・むくみ",side:"h"}],
+        flags, {b:["hip","belly"], h:["shoulderL","lowL"]});
       return frontFigure(fut, "future", c.flatMap(x=>x.z||[]), c); })()
   };
 }
