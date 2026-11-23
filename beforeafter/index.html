@@ -110,6 +110,8 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 @media(max-width:600px){.issues{grid-template-columns:minmax(0,1fr)}}
 .refwrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:center}
 .refimg{width:100%;height:auto;border-radius:14px;display:block}
+.refbox{position:relative;container-type:inline-size}
+.relabel{position:absolute;top:20.2%;height:6.93%;border-radius:999px;display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-weight:700;font-size:16px;font-size:3.1cqw;letter-spacing:.06em}
 .yourcase{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
 .yourcase h5{margin:0 0 12px;font-size:18px;color:#c9405b}
 .yc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
@@ -1248,6 +1250,20 @@ function sideRefHtml(flags){
       <div class="yc h"><b>健康面</b>${li("h")}</div>
       <div class="yc b"><b>美容面</b>${li("b")}</div></div></div>`;
 }
+function faceRefHtml(list){
+  const li=k=>pick(list,k).map(x=>`<span>${x}</span>`).join("");
+  return `<div class="refwrap"><div class="refbox"><img class="refimg" src="face-line.jpg" alt="フェイスラインの変化による顔の印象の比較イラスト">
+      <i class="relabel" style="left:7.42%;width:27.35%;background:rgb(190,97,96)">今のお顔</i>
+      <i class="relabel" style="left:47.2%;width:27.47%;background:rgb(176,96,104)">このままだと…</i></div>
+    <div class="yourcase"><h5>あなたの場合、このままだと…</h5>
+      <div class="yc h"><b>健康面</b>${li("health")}</div>
+      <div class="yc b"><b>美容面</b>${li("beauty")}</div></div></div>
+  <div class="explain"><h5>フェイスラインがたるんでいく流れ</h5><ol>
+    <li><b>首・肩のこりや猫背</b>で、顔まわりの血流・リンパの流れが滞りやすくなる</li>
+    <li><b>むくみ</b>や<b>筋膜・表情筋のこわばり</b>で、頬やあご下に重みがたまりやすくなる</li>
+    <li>重力で<b>頬の位置が下がり</b>、輪郭がぼやけて<b>顔が大きく・四角く見えやすく</b>なる</li></ol>
+    <p>→ 姿勢と顔まわりのこりを一緒に整えると、フェイスラインがすっきりしやすくなります。</p></div>`;
+}
 function illusHtml(mode, view, m, flags){
   const s=illusSet(mode, view, m, flags);
   return `<div class="illus">
@@ -1289,7 +1305,7 @@ function showCheck(){
         </div>
       </div></div>
       <h4 class="futHead">このままだと…</h4>
-      ${mode==="posture" && v==="side" ? sideRefHtml(flagged) : illusHtml(mode, v, b.m, flagged)}`;
+      ${mode==="posture" && v==="side" ? sideRefHtml(flagged) : mode==="face" ? faceRefHtml(list) : illusHtml(mode, v, b.m, flagged)}`;
     body.appendChild(blk);
     const cv2=blk.querySelector("canvas");
     const {x,T}=drawShot(cv2,b,mode,v,C.before,700);
