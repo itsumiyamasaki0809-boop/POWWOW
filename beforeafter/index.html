@@ -958,17 +958,17 @@ function sideFigure(q, key, zones, callouts){
   const ank={x:92,y:404}, sV=D(q.shin), knee=A(ank,sV,94), tV=D(q.thigh), hip=A(knee,tV,98);
   const u=D(q.torso), f=N(u), sh=A(hip,u,112), fS=N(sV), fT=N(tV);
   const nv=D(q.neck), nf=N(nv), neckTop=A(A(sh,u,6),nv,22);
-  const P=(c,l1,l2)=>A(A(c,f,l1),u,l2||0), sag=q.sag||0, lord=q.lord||0;
+  const P=(c,l1,l2)=>A(A(c,f,l1),u,l2||0), sag=q.sag||0, lord=q.lord||0, el=q.elder||0;
   const pts=[
     A(neckTop,nf,6), A(A(sh,u,8),f,7), P(sh,12,0),
-    P(L(hip,sh,.7-q.kyph*.06),21-q.kyph*3), P(L(hip,sh,.56),12+q.belly*3), P(L(hip,sh,.4),11+q.belly*7), P(L(hip,sh,.22),12.5+q.belly*15), P(L(hip,sh,.06),13+q.belly*6),
+    P(L(hip,sh,.7-q.kyph*.06),21-q.kyph*3-el*5), P(L(hip,sh,.56),12+q.belly*3+el*3), P(L(hip,sh,.4),11+q.belly*7+el*4), P(L(hip,sh,.22),12.5+q.belly*15), P(L(hip,sh,.06),13+q.belly*6),
     P(hip,12,-5), A(L(hip,knee,.35),fT,13), A(knee,fS,8.5), A(L(knee,ank,.45),fS,6.5), A(ank,fS,4.5),
     {x:ank.x+24,y:ank.y+10}, {x:ank.x+20,y:ank.y+13}, {x:ank.x-7,y:ank.y+13},
     {x:ank.x-8,y:ank.y+4}, A(L(knee,ank,.8),fS,-5.5), A(L(knee,ank,.33),fS,-11.5), A(knee,fS,-8.5),
-    A(L(hip,knee,.45),fT,-12.5), A(A(hip,f,-17),u,-21-sag*5), P(hip,-25+sag*3,-6-sag*5),
-    P(L(hip,sh,.36),-10.5+lord*5), P(L(hip,sh,.56),-12.5-q.kyph*8), P(L(hip,sh,.78),-14-q.kyph*14), P(sh,-11-q.kyph*3,4), A(A(sh,u,10),f,-5.5), A(neckTop,nf,-6)
+    A(L(hip,knee,.45),fT,-12.5), A(A(hip,f,-17+el*2),u,-21-sag*5), P(hip,-25+sag*3+el*4,-6-sag*5),
+    P(L(hip,sh,.36),-10.5+lord*5-el*5), P(L(hip,sh,.56),-12.5-q.kyph*8-el*9), P(L(hip,sh,.8),-14-q.kyph*14-el*16), P(sh,-11-q.kyph*3-el*9,4), A(A(sh,u,10),f,-5.5), A(neckTop,nf,-6)
   ];
-  const upperBack=P(L(hip,sh,.78),-14-q.kyph*14);
+  const upperBack=P(L(hip,sh,.8),-14-q.kyph*14-el*16);
   const body=catmull(pts);
   // 腕
   const armA=q.kyph*16+q.torso*.4, sj=P(sh,-1+q.kyph*9,-6);
@@ -976,7 +976,7 @@ function sideFigure(q, key, zones, callouts){
   const ac=ILL.arm[key];
   const arm=`<path d="M${fx(sj.x)} ${fx(sj.y)} L${fx(elbow.x)} ${fx(elbow.y)}" stroke="${ac}" stroke-width="12" stroke-linecap="round"/><path d="M${fx(elbow.x)} ${fx(elbow.y)} L${fx(wrist.x)} ${fx(wrist.y)}" stroke="${ac}" stroke-width="9" stroke-linecap="round"/><ellipse cx="${fx(wrist.x)}" cy="${fx(wrist.y+5)}" rx="5" ry="7" fill="${ac}"/>`;
   // 頭（横顔＋まとめ髪）
-  const hf=D(q.neck+90), hu=nv, head=A(A(neckTop,nv,17),hf,3), H=(a,b)=>({x:head.x+hf.x*a+hu.x*b, y:head.y+hf.y*a+hu.y*b});
+  const hu=D(q.neck-(q.headUp||0)), hf=N(hu), head=A(A(neckTop,nv,17),hf,3), H=(a,b)=>({x:head.x+hf.x*a+hu.x*b, y:head.y+hf.y*a+hu.y*b});
   const face=catmull([H(-17,4),H(-14,16),H(0,22),H(13,17),H(19,6),H(20,0),H(23,-3),H(19,-6),H(18,-12),H(12,-19),H(0,-22),H(-13,-17)]);
   if (key==="guide") return guideSvg(`<path d="${body}"/><path d="${face}"/>`);
   const hair=catmull([H(15,10),H(6,22),H(-8,22),H(-19,10),H(-20,-6),H(-13,-16),H(-4,-12),H(-2,2),H(6,6),H(14,4)]);
@@ -1145,12 +1145,12 @@ function illusSet(mode, view, m, flags){
   if (view==="side"){
     const hf=m.headFwd??8, tr=m.trunk??0, ps=m.pelvisShift??0;
     const now={shin:0, thigh:clamp(ps,-8,8), torso:clamp(tr,-6,15), neck:clamp(hf,0,30), kyph:clamp((hf-8)/25+tr/16,0,.6), belly:clamp(Math.abs(ps)/10+Math.max(0,tr)/16,0,.4), sag:0, lord:ps<0?.5:0};
-    const fut={shin:3, thigh:now.thigh+(ps>=0?3:-3), torso:clamp(now.torso*1.2,-3,10)-(ps>=0?2:0), neck:now.neck*1.3+18, kyph:Math.min(1,now.kyph+.7), belly:Math.min(1,now.belly+.6), sag:.8, lord:ps<0?1:.3};
+    const fut={shin:10, thigh:-4, torso:clamp(now.torso,0,6)+9, neck:clamp(now.neck,0,30)+36, headUp:22, kyph:1, belly:Math.min(1,now.belly+.6), sag:1, lord:0, elder:1}; // 高齢者の丸まった姿勢
     const nz=[...(has("headFwd")?["neck"]:[]), ...(has("trunk")?["upper","belly"]:[]), ...(has("pelvisShift")?["low"]:[])];
     return {
       ideal: sideFigure({shin:0,thigh:0,torso:0,neck:6,kyph:0,belly:0}, "ideal"),
       now: sideFigure(now, "now", nz),
-      future: (()=>{ const c=chooseCallouts([{k:"head",t:"頭が前に出る"},{k:"neck",t:"首・肩がガチガチ",z:["neck"]},{k:"back",t:"背中が丸まる",z:["upper"]},{k:"arm",t:"二の腕に脂肪",z:["arm"]},{k:"belly",t:"お腹ぽっこり",z:["belly"]},{k:"low",t:ps<0?"反り腰で腰に負担":"腰に負担",z:["low"]},{k:"butt",t:"お尻が垂れる",z:["butt"]}], flags, ["back","belly","neck"]);
+      future: (()=>{ const c=chooseCallouts([{k:"head",t:"頭が前に出る"},{k:"neck",t:"首・肩がガチガチ",z:["neck"]},{k:"back",t:"背中が丸まる",z:["upper"]},{k:"arm",t:"二の腕に脂肪",z:["arm"]},{k:"belly",t:"お腹ぽっこり",z:["belly"]},{k:"low",t:"腰に負担",z:["low"]},{k:"butt",t:"お尻が垂れる",z:["butt"]}], flags, ["back","belly","neck"]);
         return sideFigure(fut, "future", c.flatMap(x=>x.z||[]), c); })()
     };
   }
