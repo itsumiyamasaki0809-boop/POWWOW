@@ -910,8 +910,9 @@ function showResult(){
 
 // ---------- イラスト：理想 / 今のあなた / このままだと（女性シルエット・パステル） ----------
 const ILL = {pink:"#ff6f91", yellow:"#ffb43b", line:"#c7a3ad", hair:["#6e5048","#4e3631"],
-  body:{ideal:["#fde4dc","#f6c3b8"], now:["#e6e8fb","#c4cbf0"], future:["#ecd6de","#c9a4b3"]},
-  arm:{ideal:"#f6cabe", now:"#cbd1f2", future:"#cfacba"},
+  body:{ideal:["#fde9de","#f8d3c3"], now:["#fde9de","#f8d3c3"], future:["#f6e0d2","#ecc9b5"]},
+  arm:{ideal:"#f8d6c7", now:"#f8d6c7", future:"#efcdb9"},
+  wear:{ideal:"#9fd8c1", now:"#b9bff0", future:"#dca3b6"},
   skin:{ideal:["#fff0e6","#fbd9c6"], now:["#fbe6d8","#f4cdb6"], future:["#f0d8c2","#dcbb9c"]},
   top:{ideal:"#cfe9df", now:"#d9dcf5", future:"#d9c7cf"}};
 let ILLN = 0;
@@ -980,7 +981,11 @@ function sideFigure(q, key, zones, callouts){
   const face=catmull([H(-17,4),H(-14,16),H(0,22),H(13,17),H(19,6),H(20,0),H(23,-3),H(19,-6),H(18,-12),H(12,-19),H(0,-22),H(-13,-17)]);
   if (key==="guide") return guideSvg(`<path d="${body}"/><path d="${face}"/>`);
   const hair=catmull([H(15,10),H(6,22),H(-8,22),H(-19,10),H(-20,-6),H(-13,-16),H(-4,-12),H(-2,2),H(6,6),H(14,4)]);
-  const bun=H(-19,15);
+  const pony=catmull([H(-15,10),H(-27,6),H(-33,-8),H(-31,-24),H(-25,-34),H(-24,-20),H(-22,-6),H(-16,2)]);
+  const band=(c0,c1,c2,c3)=>`<path d="M${fx(c0.x)} ${fx(c0.y)} L${fx(c1.x)} ${fx(c1.y)} L${fx(c2.x)} ${fx(c2.y)} L${fx(c3.x)} ${fx(c3.y)}Z"/>`;
+  const wearTop=band(P(L(hip,sh,.92),-45), P(L(hip,sh,.92),45), P(L(hip,sh,.52),45), P(L(hip,sh,.52),-45));
+  const wearBottom=band(P(L(hip,sh,.14),-45), P(L(hip,sh,.14),45), A(L(hip,knee,.36),fT,45), A(L(hip,knee,.36),fT,-45));
+  const spine=catmull([A(neckTop,nf,-2), P(sh,-5-q.kyph*3-el*8,4), P(L(hip,sh,.8),-8-q.kyph*14-el*15), P(L(hip,sh,.56),-6.5-q.kyph*8-el*9), P(L(hip,sh,.34),-4+lord*4-el*5), P(hip,-10+el*2,-6), P(hip,-15+el*3,-18)], false);
   const eye=H(12,1), lash=`<path d="M${fx(H(9,2).x)} ${fx(H(9,2).y)} Q${fx(H(12,4).x)} ${fx(H(12,4).y)} ${fx(H(15,2).x)} ${fx(H(15,2).y)}" stroke="#4e3631" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
   const sk=ILL.skin[key];
   const Z={
@@ -998,9 +1003,13 @@ function sideFigure(q, key, zones, callouts){
   return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,g)}
     <line x1="${ank.x}" y1="424" x2="${ank.x}" y2="12" stroke="#d6c4c4" stroke-width="1.2" stroke-dasharray="4 5"/>
     <ellipse cx="${ank.x+6}" cy="420" rx="44" ry="5" fill="#c9a9b1" opacity=".22"/>
+    <clipPath id="cl${id}"><path d="${body}"/></clipPath>
+    <path d="${pony}" fill="url(#hr${id})"/>
     <path d="${body}" fill="url(#bd${id})" stroke="${ILL.line}" stroke-width="1.2"/>
+    <g clip-path="url(#cl${id})" fill="${ILL.wear[key]}">${wearTop}${wearBottom}</g>
+    <path d="${body}" fill="none" stroke="${ILL.line}" stroke-width="1.2"/>
     ${zoneSvg(id,(zones||[]).filter(k=>k!=="arm").map(k=>Z[k]).filter(Boolean))}
-    <circle cx="${fx(bun.x)}" cy="${fx(bun.y)}" r="10" fill="url(#hr${id})"/>
+    <path d="${spine}" fill="none" stroke="#e8475f" stroke-width="3.2" stroke-linecap="round" opacity=".85"/>
     <path d="${face}" fill="${sk[0]}" stroke="${ILL.line}" stroke-width="1.1"/>
     <path d="${hair}" fill="url(#hr${id})"/>
     ${lash}<circle cx="${fx(H(5,-6).x)}" cy="${fx(H(5,-6).y)}" r="4" fill="url(#bl${id})"/>
@@ -1055,8 +1064,11 @@ function frontFigure(q, key, zones, callouts){
     <ellipse cx="100" cy="420" rx="48" ry="5" fill="#c9a9b1" opacity=".22"/>
     <path d="${hairBack}" fill="url(#hr${id})"/>
     ${arm(-1,sl)}${arm(1,sr)}
+    <clipPath id="cl${id}"><path d="${body}"/></clipPath>
     <path d="${body}" fill="url(#bd${id})" stroke="${ILL.line}" stroke-width="1.2"/>
-    <path d="M${fx(pc.x)} ${fx(pc.y-6)} Q${fx(sp.x)} ${fx(sp.y)} ${fx(sc.x)} ${fx(sc.y+4)}" stroke="#b98a98" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="3 4" fill="none"/>
+    <g clip-path="url(#cl${id})" fill="${ILL.wear[key]}"><rect x="0" y="${fx(Math.min(sl.y,sr.y)+3)}" width="200" height="${fx(L(sc,pc,.45).y-Math.min(sl.y,sr.y)-3)}"/><path d="M0 ${fx(pc.y-16)} L200 ${fx(pc.y-16)} L200 278 L0 278Z" transform="rotate(${fx(q.rp*.6)} 100 ${fx(pc.y)})"/></g>
+    <path d="${body}" fill="none" stroke="${ILL.line}" stroke-width="1.2"/>
+    <path d="M${fx(pc.x)} ${fx(pc.y-6)} Q${fx(sp.x)} ${fx(sp.y)} ${fx(sc.x)} ${fx(sc.y+4)}" stroke="#e8475f" stroke-opacity=".8" stroke-width="2.6" stroke-linecap="round" fill="none"/>
     ${zoneSvg(id,(zones||[]).map(k=>Z[k]).filter(Boolean))}
     <g transform="rotate(${fx(q.rh)} ${fx(hc.x)} ${fx(hc.y)})">
       <ellipse cx="${fx(hc.x)}" cy="${fx(hc.y)}" rx="16" ry="20" fill="${sk[0]}" stroke="${ILL.line}" stroke-width="1"/>
@@ -1145,7 +1157,7 @@ function illusSet(mode, view, m, flags){
   if (view==="side"){
     const hf=m.headFwd??8, tr=m.trunk??0, ps=m.pelvisShift??0;
     const now={shin:0, thigh:clamp(ps,-8,8), torso:clamp(tr,-6,15), neck:clamp(hf,0,30), kyph:clamp((hf-8)/25+tr/16,0,.6), belly:clamp(Math.abs(ps)/10+Math.max(0,tr)/16,0,.4), sag:0, lord:ps<0?.5:0};
-    const fut={shin:10, thigh:-4, torso:clamp(now.torso,0,6)+9, neck:clamp(now.neck,0,30)+36, headUp:22, kyph:1, belly:Math.min(1,now.belly+.6), sag:1, lord:0, elder:1}; // 高齢者の丸まった姿勢
+    const fut={shin:6, thigh:3, torso:clamp(now.torso,0,6)-1, neck:clamp(now.neck,0,30)+30, headUp:12, kyph:1, belly:Math.min(1,now.belly+.6), sag:.9, lord:0, elder:.7}; // 猫背：頭が前・背中が丸い・骨盤が前・ひざが曲がる
     const nz=[...(has("headFwd")?["neck"]:[]), ...(has("trunk")?["upper","belly"]:[]), ...(has("pelvisShift")?["low"]:[])];
     return {
       ideal: sideFigure({shin:0,thigh:0,torso:0,neck:6,kyph:0,belly:0}, "ideal"),
