@@ -709,8 +709,19 @@ function drawGuide(W,H){
   ctx.save(); ctx.strokeStyle="rgba(255,255,255,.35)"; ctx.lineWidth=Math.max(1,W/900); ctx.setLineDash([8,8]);
   ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H);
   if (S.mode==="face"){ ctx.moveTo(0,H*.42); ctx.lineTo(W,H*.42); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.ellipse(W/2,H*.48,H*.17,H*.24,0,0,Math.PI*2); }
-  else { ctx.moveTo(0,H*.06); ctx.lineTo(W,H*.06); ctx.moveTo(0,H*.95); ctx.lineTo(W,H*.95); }
+  else { ctx.moveTo(0,H*.95); ctx.lineTo(W,H*.95); }
   ctx.stroke(); ctx.restore();
+  if (S.mode!=="face"){ // 人型シルエットのガイド（足元を下の線に、頭を上に合わせる）
+    const img = guideImg(S.view);
+    if (img.complete && img.naturalWidth){
+      const k = H*.95/420, gx = W/2 - (S.view==="side"?92:100)*k, gy = H*.95 - 418*k;
+      ctx.save(); ctx.globalAlpha = .85; ctx.drawImage(img, gx, gy, 200*k, 440*k); ctx.restore();
+    }
+    const fs = Math.max(14, H/36);
+    ctx.save(); ctx.font = `700 ${fs}px "Zen Kaku Gothic New",sans-serif`; ctx.fillStyle="rgba(255,255,255,.9)"; ctx.textAlign="left";
+    ctx.fillText(S.view==="side" ? "右向きに立ち、シルエットに体を合わせてください" : "正面を向き、シルエットに体を合わせてください", fs*.8, H*.95-fs*.6);
+    ctx.restore();
+  }
 }
 function renderLive(m){
   const defs = DEFS[groupKey(S.mode,S.view)];
@@ -925,13 +936,13 @@ function calloutSvg(list, tx, top, bottom){
   if (!list.length) return "";
   const s=[...list].sort((a,b)=>a.at.y-b.at.y), step=Math.min(48, (bottom-top)/Math.max(1,s.length-1||1));
   let y=top; const ys=[];
-  s.forEach((c,i)=>{ y = i ? Math.max(ys[i-1]+30, Math.min(c.at.y, top+i*step+20)) : Math.max(top, Math.min(c.at.y, bottom-(s.length-1)*30)); ys.push(y); });
+  s.forEach((c,i)=>{ y = i ? Math.max(ys[i-1]+40, Math.min(c.at.y, top+i*step+20)) : Math.max(top, Math.min(c.at.y, bottom-(s.length-1)*40)); ys.push(y); });
   const over = ys[ys.length-1]-bottom; if (over>0) for(let i=0;i<ys.length;i++) ys[i]-=over;
-  return s.map((c,i)=>{ const w=c.t.length*13.2+18, yy=ys[i];
+  return s.map((c,i)=>{ const w=c.t.length*15.5+22, yy=ys[i];
     return `<path d="M${fx(c.at.x)} ${fx(c.at.y)} Q${fx((c.at.x+tx)/2)} ${fx(yy)} ${fx(tx)} ${fx(yy)}" stroke="#e58b97" stroke-width="1.2" fill="none"/>
       <circle cx="${fx(c.at.x)}" cy="${fx(c.at.y)}" r="3" fill="#fff" stroke="#e05a73" stroke-width="1.6"/>
-      <rect x="${fx(tx)}" y="${fx(yy-12)}" width="${fx(w)}" height="24" rx="12" fill="#fff" stroke="#f2b8c0"/>
-      <text x="${fx(tx+9)}" y="${fx(yy+4.5)}" font-size="13" font-weight="700" fill="#c9405b">${c.t}</text>`;
+      <rect x="${fx(tx)}" y="${fx(yy-15)}" width="${fx(w)}" height="30" rx="15" fill="#fff" stroke="#f2b8c0" stroke-width="1.4"/>
+      <text x="${fx(tx+11)}" y="${fx(yy+5.5)}" font-size="15.5" font-weight="700" fill="#c9405b">${c.t}</text>`;
   }).join("");
 }
 
@@ -962,6 +973,7 @@ function sideFigure(q, key, zones, callouts){
   // 頭（横顔＋まとめ髪）
   const hf=D(q.neck+90), hu=nv, head=A(A(neckTop,nv,17),hf,3), H=(a,b)=>({x:head.x+hf.x*a+hu.x*b, y:head.y+hf.y*a+hu.y*b});
   const face=catmull([H(-17,4),H(-14,16),H(0,22),H(13,17),H(19,6),H(20,0),H(23,-3),H(19,-6),H(18,-12),H(12,-19),H(0,-22),H(-13,-17)]);
+  if (key==="guide") return guideSvg(`<path d="${body}"/><path d="${face}"/>`);
   const hair=catmull([H(15,10),H(6,22),H(-8,22),H(-19,10),H(-20,-6),H(-13,-16),H(-4,-12),H(-2,2),H(6,6),H(14,4)]);
   const bun=H(-19,15);
   const eye=H(12,1), lash=`<path d="M${fx(H(9,2).x)} ${fx(H(9,2).y)} Q${fx(H(12,4).x)} ${fx(H(12,4).y)} ${fx(H(15,2).x)} ${fx(H(15,2).y)}" stroke="#4e3631" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
@@ -1029,6 +1041,7 @@ function frontFigure(q, key, zones, callouts){
     thighL:{x:L(jl,kl,.45).x-5, y:282, rx:8, ry:20, c:"y"}, thighR:{x:L(jr,kr,.45).x+5, y:282, rx:8, ry:20, c:"y"}
   };
   const at={shoulder:Z.shoulder, neck:Z.neck, spine:sp, belly:Z.belly, hip:Z.hipR, knee:ad(kr,8,0), head:ad(hc,0,-12)};
+  if (key==="guide") return guideSvg(`<path d="${body}"/><ellipse cx="${fx(hc.x)}" cy="${fx(hc.y)}" rx="17" ry="21"/>${arm(-1,sl).replace(/stroke="[^"]*"/g,'stroke="rgba(255,255,255,.35)"')}${arm(1,sr).replace(/stroke="[^"]*"/g,'stroke="rgba(255,255,255,.35)"')}`);
   const W = callouts ? 352 : 200;
   return `<svg viewBox="0 0 ${W} 440" xmlns="http://www.w3.org/2000/svg" role="img">${defs(id,g)}
     <line x1="100" y1="424" x2="100" y2="12" stroke="#d6c4c4" stroke-width="1.2" stroke-dasharray="4 5"/>
@@ -1099,6 +1112,18 @@ function faceFigure(q, key, zones, callouts){
 }
 
 // ---- 計測値 → イラストのパラメータ
+// 吹き出しを3点に絞る（その人の課題に近いものから）
+const FUT_PICK = {
+  headFwd:["head","neck"], trunk:["back","belly","arm"], pelvisShift:["belly","low","butt"], plumb:["butt"],
+  shoulder:["shoulder"], pelvis:["hip","belly"], head:["head"], axis:["spine","knee"],
+  mouth:["mouth","naso"], eyeTail:["eye"], eyeOpen:["eye"]
+};
+function chooseCallouts(all, flags, defaults, n=3){
+  const keys=[];
+  for (let round=0; round<3 && keys.length<n; round++) flags.forEach(f=>{ const k=(FUT_PICK[f.k]||[])[round]; if(k && !keys.includes(k) && keys.length<n) keys.push(k); });
+  defaults.forEach(k=>{ if(keys.length<n && !keys.includes(k)) keys.push(k); });
+  return all.filter(c=>keys.includes(c.k));
+}
 function illusSet(mode, view, m, flags){
   const has = k => flags.some(f=>f.k===k);
   if (mode==="face"){
@@ -1108,8 +1133,8 @@ function illusSet(mode, view, m, flags){
     return {
       ideal: faceFigure({sag:0,mouth:0,eye:0,cheek:0,chin:0}, "ideal"),
       now: faceFigure(now, "now", has("mouth")?["jowl","jowlL"]:[]),
-      future: faceFigure(fut, "future", ["jowl","jowlL","chin","jaw","jawL"],
-        [{k:"skin",t:"くすみ・むくみ"},{k:"eye",t:"目尻が下がる"},{k:"cheek",t:"頬が下がる"},{k:"naso",t:"ほうれい線"},{k:"mouth",t:"への字口"},{k:"jowl",t:"輪郭がたるむ"},{k:"chin",t:"二重あご"}])
+      future: (()=>{ const c=chooseCallouts([{k:"skin",t:"くすみ・むくみ"},{k:"eye",t:"目尻が下がる"},{k:"cheek",t:"頬が下がる"},{k:"naso",t:"ほうれい線が深く"},{k:"mouth",t:"への字口に"},{k:"jowl",t:"輪郭がたるむ",z:["jowl","jowlL"]},{k:"chin",t:"二重あご",z:["chin"]}], flags, ["jowl","naso","chin"]);
+        return faceFigure(fut, "future", c.flatMap(x=>x.z||[]), c); })()
     };
   }
   if (view==="side"){
@@ -1120,8 +1145,8 @@ function illusSet(mode, view, m, flags){
     return {
       ideal: sideFigure({shin:0,thigh:0,torso:0,neck:6,kyph:0,belly:0}, "ideal"),
       now: sideFigure(now, "now", nz),
-      future: sideFigure(fut, "future", ["neck","upper","low","belly","arm","butt"],
-        [{k:"head",t:"頭が前に出る"},{k:"neck",t:"首・肩がガチガチ"},{k:"back",t:"背中が丸まる"},{k:"arm",t:"二の腕に脂肪"},{k:"belly",t:"お腹ぽっこり"},{k:"low",t:ps<0?"反り腰で腰に負担":"腰に負担"},{k:"butt",t:"お尻が垂れる"}])
+      future: (()=>{ const c=chooseCallouts([{k:"head",t:"頭が前に出る"},{k:"neck",t:"首・肩がガチガチ",z:["neck"]},{k:"back",t:"背中が丸まる",z:["upper"]},{k:"arm",t:"二の腕に脂肪",z:["arm"]},{k:"belly",t:"お腹ぽっこり",z:["belly"]},{k:"low",t:ps<0?"反り腰で腰に負担":"腰に負担",z:["low"]},{k:"butt",t:"お尻が垂れる",z:["butt"]}], flags, ["back","belly","neck"]);
+        return sideFigure(fut, "future", c.flatMap(x=>x.z||[]), c); })()
     };
   }
   const sh=m.shoulder??0, pv=m.pelvis??0, hd=m.head??0, ax=m.axis??0, s=sg(sh), pvs=Math.abs(pv)>.5?sg(pv):-s;
@@ -1131,9 +1156,21 @@ function illusSet(mode, view, m, flags){
   return {
     ideal: frontFigure({rs:0,rp:0,rh:0,axis:0,curve:0,hipW:0,oleg:0,belly:0}, "ideal"),
     now: frontFigure(now, "now", nz),
-    future: frontFigure(fut, "future", ["neck","shoulder","low","belly","hipL","hipR","thighL","thighR"],
-      [{k:"head",t:"顔・首が傾く"},{k:"shoulder",t:"肩の高さがズレる"},{k:"spine",t:"背骨がゆがむ"},{k:"belly",t:"下腹ぽっこり"},{k:"hip",t:"下半身太り"},{k:"knee",t:"O脚ぎみに"}])
+    future: (()=>{ const c=chooseCallouts([{k:"head",t:"顔・首が傾く",z:["neck"]},{k:"shoulder",t:"肩の高さがズレる",z:["shoulder"]},{k:"spine",t:"背骨がゆがむ"},{k:"belly",t:"下腹ぽっこり",z:["belly"]},{k:"hip",t:"下半身太り",z:["hipL","hipR","thighL","thighR"]},{k:"knee",t:"O脚ぎみに"}], flags, ["shoulder","hip","belly"]);
+      return frontFigure(fut, "future", c.flatMap(x=>x.z||[]), c); })()
   };
+}
+function guideSvg(inner){
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 440" width="400" height="880"><g fill="rgba(255,255,255,.10)" stroke="#ffffff" stroke-width="2.4" stroke-dasharray="7 5" stroke-linejoin="round">${inner}</g></svg>`;
+}
+const GUIDE = {};
+function guideImg(view){
+  if (!GUIDE[view]){
+    const svg = view==="side" ? sideFigure({shin:0,thigh:0,torso:0,neck:6,kyph:0,belly:0},"guide")
+                              : frontFigure({rs:0,rp:0,rh:0,axis:0,curve:0,hipW:0,oleg:0,belly:0},"guide");
+    const img = new Image(); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); GUIDE[view] = img;
+  }
+  return GUIDE[view];
 }
 function illusHtml(mode, view, m, flags){
   const s=illusSet(mode, view, m, flags);
