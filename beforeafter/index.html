@@ -108,6 +108,16 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .iss.beauty{background:#fdeef2}.iss.beauty b{background:#e0567a}.iss.beauty li{color:#c43c62}
 .iss.health{background:#e9f3f8}.iss.health b{background:#2f7fa3}.iss.health li{color:#23688a}
 @media(max-width:600px){.issues{grid-template-columns:minmax(0,1fr)}}
+.refwrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:center}
+.refimg{width:100%;height:auto;border-radius:14px;display:block}
+.yourcase{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.yourcase h5{margin:0 0 12px;font-size:18px;color:#c9405b}
+.yc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.yc b{width:100%;font-size:13px}
+.yc span{font-weight:700;font-size:17px;padding:6px 16px;border-radius:999px}
+.yc.h b{color:#2f7fa3}.yc.h span{background:#e9f3f8;color:#23688a;border:1px solid #b6d6e6}
+.yc.b b{color:#e0567a}.yc.b span{background:#fdeef2;color:#c43c62;border:1px solid #f2b8c8}
+@media(max-width:700px){.refwrap{grid-template-columns:minmax(0,1fr)}}
 .futHead{margin:22px 0 8px;font-size:clamp(20px,2.6vw,26px);color:#c9405b;border-top:2px dashed #f0c3c9;padding-top:16px}
 .explain{margin-top:12px;background:#fff7f8;border:1px solid #f4cdd3;border-radius:14px;padding:14px 18px}
 .explain h5{margin:0 0 6px;font-size:16px;color:#c9405b}
@@ -1168,6 +1178,10 @@ const TWO_PICK = {
   headFwd:{b:["chin"], h:["neckB"]}, trunk:{b:["belly","bust"], h:["upperB"]}, pelvisShift:{b:["belly","thighF"], h:["lowB"]}, plumb:{b:["thighF"], h:["calf"]},
   shoulder:{b:["face"], h:["shoulderL"]}, pelvis:{b:["hip","belly"], h:["lowL"]}, head:{b:["face"], h:["neckF"]}, axis:{b:["knee"], h:["lowL"]}
 };
+const SIDE_CAT = [
+  {k:"chin",t:"二重あご",side:"b"},{k:"bust",t:"バストが下がる",side:"b"},{k:"belly",t:"お腹ぽっこり",side:"b",z:["belly"]},{k:"thighF",t:"前ももが張る",side:"b"},
+  {k:"neckB",t:"頭痛・首こり",side:"h",z:["neck"]},{k:"upperB",t:"肩こり",side:"h",z:["upper"]},{k:"lowB",t:"腰痛",side:"h",z:["low"]},{k:"calf",t:"冷え・むくみ",side:"h"}];
+const SIDE_DEF = {b:["belly","chin"], h:["upperB","lowB"]};
 function chooseTwoSided(catalog, flags, defaults, n=2){
   const pick={b:[],h:[]};
   ["b","h"].forEach(sd=>{
@@ -1197,10 +1211,7 @@ function illusSet(mode, view, m, flags){
     return {
       ideal: sideFigure({shin:0,thigh:0,torso:0,neck:6,kyph:0,belly:0}, "ideal"),
       now: sideFigure(now, "now", nz),
-      future: (()=>{ const c=chooseTwoSided([
-          {k:"chin",t:"二重あご",side:"b"},{k:"bust",t:"バストが下がる",side:"b"},{k:"belly",t:"お腹ぽっこり",side:"b",z:["belly"]},{k:"thighF",t:"前ももが張る",side:"b"},
-          {k:"neckB",t:"頭痛・首こり",side:"h",z:["neck"]},{k:"upperB",t:"肩こり",side:"h",z:["upper"]},{k:"lowB",t:"腰痛",side:"h",z:["low"]},{k:"calf",t:"冷え・むくみ",side:"h"}],
-          flags, {b:["belly","chin"], h:["upperB","lowB"]});
+      future: (()=>{ const c=chooseTwoSided(SIDE_CAT, flags, SIDE_DEF);
         return sideFigure(fut, "future", c.flatMap(x=>x.z||[]), c); })()
     };
   }
@@ -1229,6 +1240,13 @@ function guideImg(view){
     const img = new Image(); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); GUIDE[view] = img;
   }
   return GUIDE[view];
+}
+function sideRefHtml(flags){
+  const c=chooseTwoSided(SIDE_CAT, flags, SIDE_DEF), li=sd=>c.filter(x=>x.side===sd).map(x=>`<span>${x.t}</span>`).join("");
+  return `<div class="refwrap"><img class="refimg" src="posture-side.jpg" alt="背すじを伸ばした姿勢と、背中が丸まった姿勢の比較イラスト">
+    <div class="yourcase"><h5>あなたの場合、このままだと…</h5>
+      <div class="yc h"><b>健康面</b>${li("h")}</div>
+      <div class="yc b"><b>美容面</b>${li("b")}</div></div></div>`;
 }
 function illusHtml(mode, view, m, flags){
   const s=illusSet(mode, view, m, flags);
@@ -1271,7 +1289,7 @@ function showCheck(){
         </div>
       </div></div>
       <h4 class="futHead">このままだと…</h4>
-      ${illusHtml(mode, v, b.m, flagged)}`;
+      ${mode==="posture" && v==="side" ? sideRefHtml(flagged) : illusHtml(mode, v, b.m, flagged)}`;
     body.appendChild(blk);
     const cv2=blk.querySelector("canvas");
     const {x,T}=drawShot(cv2,b,mode,v,C.before,700);
