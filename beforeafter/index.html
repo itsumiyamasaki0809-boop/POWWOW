@@ -1304,8 +1304,8 @@ function showCheck(){
           <div class="iss health"><b>健康面の課題</b><ul>${pick(list,"health").map(x=>`<li>${x}</li>`).join("")||"<li>今の状態をキープしましょう</li>"}</ul></div>
         </div>
       </div></div>
-      <h4 class="futHead">このままだと…</h4>
-      ${mode==="posture" && v==="side" ? sideRefHtml(flagged) : mode==="face" ? faceRefHtml(list) : illusHtml(mode, v, b.m, flagged)}`;
+      ${mode==="posture" && v==="front" ? "" : `<h4 class="futHead">このままだと…</h4>
+      ${mode==="face" ? faceRefHtml(list) : sideRefHtml(flagged)}`}`;
     body.appendChild(blk);
     const cv2=blk.querySelector("canvas");
     const {x,T}=drawShot(cv2,b,mode,v,C.before,700);
