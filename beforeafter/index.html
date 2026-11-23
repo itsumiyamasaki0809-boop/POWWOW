@@ -171,6 +171,32 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .symptom-card[aria-pressed=true]{background:var(--pale);border-color:var(--pink);box-shadow:0 6px 16px rgba(233,30,99,.18)}
 .symptom-card[aria-pressed=true] .ck{background:var(--pink);border-color:var(--pink);color:#fff}
 .symptom-hint{text-align:center;color:#AD1457;font-size:.9rem;margin:1.2rem 0}
+.ai-diagnosis-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;margin:0 auto 2rem;padding:.9rem 2.6rem;background:linear-gradient(135deg,var(--pink) 0%,var(--pinkd) 100%);color:#fff;border:2px solid #fff;outline:2px solid var(--ink);border-radius:50px;font:inherit;font-weight:500;font-size:1.15rem;letter-spacing:.08em;cursor:pointer;box-shadow:0 6px 16px rgba(233,30,99,.3)}
+.ai-diagnosis-btn.shake{animation:shk .4s}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#diagArea[hidden]{display:none}
+.approach-block{background:var(--pinkd);border-radius:12px;padding:3rem;display:flex;gap:2rem;align-items:center;justify-content:space-between;position:relative;overflow:hidden;max-width:1130px;margin:0 auto;animation:fadeup .5s ease}
+.approach-block::before{content:"";position:absolute;right:-2.5rem;top:-2.5rem;width:12.5rem;height:12.5rem;border-radius:50%;border:1px solid rgba(255,255,255,.1)}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.approach-content{flex:1;position:relative;z-index:1}
+.approach-title{font-weight:300;font-size:clamp(1.4rem,4vw,1.9rem);color:#fff;line-height:1.8;margin:0 0 1rem}
+.approach-title strong{color:#FFEB3B;font-weight:500}
+.approach-body{font-size:1.1rem;color:rgba(255,255,255,.92);line-height:1.95;margin:0}
+.approach-image-wrap{flex-shrink:0;position:relative;z-index:1;background:rgba(0,0,0,.1);padding:1rem;border-radius:100%}
+.pelvis-illustration{width:12rem;height:auto;overflow:visible;display:block}
+.benefits{background:var(--line);border-radius:16px;padding:3rem 1.5rem;margin:2.5rem auto 0;max-width:1130px}
+.benefits-lead{text-align:center;font-size:1rem;line-height:1.9;color:#AD1457;margin:0 0 2rem}
+.benefit-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.benefit{background:#fff;border-radius:12px;padding:1.2rem 1rem;position:relative}
+.benefit .bn{font-family:"Cormorant Garamond","Noto Serif JP",serif;font-style:italic;font-size:2.4rem;color:var(--pink);line-height:1}
+.benefit h4{margin:.4rem 0 .5rem;font-size:1.05rem;font-weight:500}
+.benefit h4 em{font-style:normal;color:var(--pinkd);background:linear-gradient(transparent 70%,#F48FB1 70%)}
+.benefit p{margin:0;font-size:.92rem;line-height:1.75;color:#7a3550}
+.next-cta{text-align:center;margin:2.5rem auto 0;max-width:900px;padding:2rem 1.5rem;border:1px solid var(--pink);border-radius:16px;background:#fff}
+.next-q{font-size:clamp(1.2rem,3.4vw,1.6rem);color:var(--ink);margin:0 0 .5rem;line-height:1.6}
+.next-q strong{color:var(--pinkd);font-weight:500;background:linear-gradient(transparent 70%,#F48FB1 70%)}
+.next-sub{color:#AD1457;margin:0 0 1rem}
+@media(max-width:900px){.benefit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.approach-block{flex-direction:column;padding:2rem 1.5rem}}
 .intro-go{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:1rem 0 2rem}
 .intro-go .btn{min-height:56px;padding:0 26px;font-size:17px}
 @media(max-width:800px){.symptom-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -256,10 +282,51 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
     <div class="hero"><p class="hero-title-jp">首や肩こりはもちろん女性特有の<br><strong>「なんとなくしんどい」</strong>には<br>実は<strong>原因</strong>があります。</p></div>
     <h2 class="section-title" style="margin-top:2.5rem">こんなお悩み、少しでもあればチェック！</h2>
     <div class="symptom-grid" id="symGrid"></div>
-    <p class="symptom-hint">気になるものをすべてタップしてから、撮影に進んでください</p>
-    <div class="intro-go">
-      <button class="btn pri" id="goPosture">姿勢を撮影する（横向き）</button>
-      <button class="btn" id="goFace">小顔を撮影する</button>
+    <p class="symptom-hint" id="symHint">気になるものをすべてタップしてから、下のボタンを押してください</p>
+    <button type="button" class="ai-diagnosis-btn" id="diagBtn"><span>🩺</span>診断する</button>
+
+    <div id="diagArea" hidden>
+      <div class="approach-block">
+        <div class="approach-content">
+          <h3 class="approach-title"><strong>仙骨の歪み度</strong><strong id="diagPct">0</strong>％</h3>
+          <p class="approach-body" id="diagMsg"></p>
+        </div>
+        <div class="approach-image-wrap">
+          <svg class="pelvis-illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path d="M55 85 C55 57, 80 49, 100 49 C120 49, 145 57, 145 85 C145 123, 120 145, 100 145 C80 145, 55 123, 55 85" stroke="#FFFFFF" stroke-width="1.2" fill="none" opacity="0.35"/>
+            <path d="M100 15 L100 95" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"><animate attributeName="opacity" values="0.4;1;0.4" dur="3s" repeatCount="indefinite"/></path>
+            <circle cx="100" cy="30" r="2" fill="#FFEB3B"/><circle cx="100" cy="50" r="2" fill="#FFEB3B"/><circle cx="100" cy="70" r="2" fill="#FFEB3B"/>
+            <path d="M85 95 L115 95 L100 133 Z" fill="#FFEB3B" fill-opacity="0.35" stroke="#FFEB3B" stroke-width="2"/>
+            <line x1="100" y1="32" x2="35" y2="95" stroke="#FFFFFF" stroke-width="0.8" opacity="0.6"/><circle cx="100" cy="32" r="1.8" fill="#FFFFFF"/>
+            <text x="32" y="88" font-family="'Noto Serif JP',serif" font-size="10" fill="#FFFFFF" text-anchor="end">自律神経の</text>
+            <text x="32" y="102" font-family="'Noto Serif JP',serif" font-size="10" fill="#FFFFFF" text-anchor="end">通り道</text>
+            <line x1="100" y1="113" x2="165" y2="95" stroke="#FFEB3B" stroke-width="0.8" opacity="0.8"/><circle cx="100" cy="113" r="1.8" fill="#FFEB3B"/>
+            <text x="168" y="88" font-family="'Noto Serif JP',serif" font-weight="500" font-size="11" fill="#FFEB3B">仙骨</text>
+            <text x="168" y="103" font-family="'Noto Serif JP',serif" font-size="9" fill="#FFFFFF" opacity="0.85">骨格の土台</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="benefits">
+        <h2 class="section-title">仙骨を整えると、肩こりだけじゃない</h2>
+        <p class="benefits-lead">パウワウ独自の「仙骨ケア」（サクラムバランステクニック®）で、骨盤の中心にある仙骨にアプローチ。<br>土台が整うと、からだ全体にいい変化が広がっていきます。</p>
+        <div class="benefit-grid">
+          <div class="benefit"><span class="bn">1</span><h4><em>肩こり・首こり・腰痛</em></h4><p>土台が整うと、首・肩・腰にかかる負担が分散されやすくなります。</p></div>
+          <div class="benefit"><span class="bn">2</span><h4><em>姿勢</em></h4><p>仙骨は背骨の土台。土台から整えることで、背すじが自然と伸びやすくなります。</p></div>
+          <div class="benefit"><span class="bn">3</span><h4><em>女性ホルモン</em></h4><p>骨盤まわりの巡りを整え、冷え・むくみ・生理など女性特有のお悩みにアプローチします。</p></div>
+          <div class="benefit"><span class="bn">4</span><h4><em>自律神経</em></h4><p>仙骨は自律神経の通り道。こわばりがゆるむと、眠りや気分の安定にもつながりやすくなります。</p></div>
+          <div class="benefit"><span class="bn">5</span><h4><em>お顔のたるみ・歪み</em></h4><p>姿勢が整うと首・肩の緊張がゆるみ、フェイスラインのたるみや歪みにもアプローチできます。</p></div>
+        </div>
+      </div>
+
+      <div class="next-cta">
+        <p class="next-q">では、実際に<strong>あなたの仙骨の状態</strong>を見てみましょう。</p>
+        <p class="next-sub">横向きの姿勢を撮影して、仙骨（骨盤）の傾きと姿勢のくずれをチェックします。</p>
+        <div class="intro-go">
+          <button class="btn pri" id="goPosture">姿勢をチェックする（横向き）</button>
+          <button class="btn" id="goFace">小顔をチェックする</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -366,7 +433,7 @@ const $ = id => document.getElementById(id);
 const C = {before:"#9C6B84", after:"#E91E63", ink:"#4A041E", ok:"#2f8f6a", warn:"#c9821c"};
 const LOGO = new Image(); LOGO.src = "powwow-logo.png";
 // 古い版がブラウザに残っていたら、最新版に自動で切り替える
-const APP_VER = "20261123-1805";
+const APP_VER = "20261123-1835";
 fetch(location.pathname + "?nc=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).then(t=>{
   const m = t.match(/const APP_VER = "([^"]+)"/);
   if (m && m[1] !== APP_VER && !sessionStorage.getItem("reloaded-"+m[1])) {
@@ -1677,6 +1744,21 @@ $("resetBtn").onclick=()=>{ if(!confirm("撮影データを消去して次のお
 
 $("tIntro").onclick=()=>screen("intro");
 $("goPosture").onclick=()=>setModeUI("posture");
+// 仙骨の歪み度（カウンセリングシートと同じ判定）
+const DIAG_MSG = {
+  50:"仙骨まわりの柔軟性が、やや低下しているかもしれません。放っておくと自律神経や女性ホルモンのバランスが乱れやすくなります。",
+  65:"仙骨の前傾・後傾がわずかに見られ、仙腸関節がこわばっている可能性があります。自律神経の働きが低下し、女性ホルモンバランスも乱れやすくなっている状態です。",
+  80:"仙骨の前傾・後傾が進み、仙腸関節も硬くなっていると考えられます。自律神経・女性ホルモンバランスの乱れに加え、骨格全体の歪みにもつながりはじめています。",
+  99:"仙骨の前傾・後傾がかなり進行し、仙腸関節も相当硬くなっている可能性が高いです。自律神経や女性ホルモンバランスが大きく乱れ、骨格の歪みもかなり進んでいる状態と考えられます。"
+};
+$("diagBtn").onclick=()=>{
+  const n=S.sym.size, b=$("diagBtn");
+  if(!n){ b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); $("symHint").textContent="まずは気になるものをタップして選んでください"; return; }
+  const pct={1:50,2:65,3:80,4:99}[n];
+  $("diagPct").textContent=pct; $("diagMsg").textContent=DIAG_MSG[pct];
+  $("symHint").textContent="診断結果はこちら"; $("diagArea").hidden=false;
+  setTimeout(()=>$("diagArea").scrollIntoView({behavior:"smooth",block:"start"}),200);
+};
 $("goFace").onclick=()=>setModeUI("face");
 screen("intro");
 </script>
