@@ -108,7 +108,8 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .iss.beauty{background:#fdeef2}.iss.beauty b{background:#e0567a}.iss.beauty li{color:#c43c62}
 .iss.health{background:#e9f3f8}.iss.health b{background:#2f7fa3}.iss.health li{color:#23688a}
 @media(max-width:600px){.issues{grid-template-columns:minmax(0,1fr)}}
-.refwrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:center}
+.refwrap{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:center}
+.refwrap .side{display:flex;flex-direction:column;gap:10px}.refwrap .explain{margin-top:0}
 .refimg{width:100%;height:auto;border-radius:14px;display:block}
 .refbox{position:relative;container-type:inline-size}
 .relabel{position:absolute;top:20.2%;height:6.93%;border-radius:999px;display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-weight:700;font-size:16px;font-size:3.1cqw;letter-spacing:.06em}
@@ -275,7 +276,7 @@ const $ = id => document.getElementById(id);
 const C = {before:"#4f7396", after:"#e0674b", ink:"#231f1c", ok:"#2f8f6a", warn:"#c9821c"};
 
 // ---------- state ----------
-const S = {mode:"posture", view:"front", phase:"before", facing:"environment", shots:{}, live:null, smooth:{}, busy:false, stream:null};
+const S = {mode:"posture", view:"side", phase:"before", facing:"environment", shots:{}, live:null, smooth:{}, busy:false, stream:null};
 const key = (m=S.mode, v=S.view, p=S.phase) => `${m}-${m==="face"?"front":v}-${p}`;
 $("cDate").valueAsDate = new Date();
 
@@ -772,7 +773,7 @@ async function analyzeAndStore(canvas){
 }
 function advance(){
   // 次に撮るべき枠へ自動で進む
-  const order = S.mode==="face" ? [["front","before"],["front","after"]] : [["front","before"],["side","before"],["front","after"],["side","after"]];
+  const order = S.mode==="face" ? [["front","before"],["front","after"]] : [["side","before"],["side","after"]];
   const justBefore = S.phase==="before";
   const next = order.find(([v,p]) => !S.shots[key(S.mode,v,p)]);
   if (next){ S.view = next[0]; S.phase = next[1]; }
@@ -805,12 +806,12 @@ function renderUI(){
   $("tFace").setAttribute("aria-pressed", S.mode==="face" && sc==="capture");
   $("tCheck").setAttribute("aria-pressed", sc==="check");
   $("tResult").setAttribute("aria-pressed", sc==="result");
-  $("viewSeg").style.display = S.mode==="face" ? "none" : "";
-  $("viewTitle").textContent = S.mode==="face" ? "小顔：正面で撮影（真顔・髪を耳にかける）" : "撮影する向き";
+  $("viewSeg").style.display = "none";
+  $("viewTitle").textContent = S.mode==="face" ? "小顔：正面で撮影（真顔・髪を耳にかける）" : "姿勢：真横（右向き）で撮影";
   document.querySelectorAll("#viewSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===S.view));
   $("phB").setAttribute("aria-pressed", S.phase==="before"); $("phA").setAttribute("aria-pressed", S.phase==="after");
   const sh=$("shoot"); sh.textContent = `${S.phase==="before"?"Before":"After"}（${S.mode==="face"?"小顔":S.view==="front"?"正面":"側面"}）を撮影`; sh.classList.toggle("after", S.phase==="after");
-  const views = S.mode==="face" ? ["front"] : ["front","side"];
+  const views = S.mode==="face" ? ["front"] : ["side"];
   $("slots").innerHTML = views.flatMap(v=>["before","after"].map(p=>{
     const s=S.shots[key(S.mode,v,p)], cur = v===(S.mode==="face"?"front":S.view) && p===S.phase;
     const name = `${S.mode==="face"?"顔":v==="front"?"正面":"側面"} ${p==="before"?"Before":"After"}`;
@@ -822,14 +823,14 @@ $("slots").addEventListener("click", e=>{ const b=e.target.closest(".slot"); if(
 document.querySelectorAll("#viewSeg button").forEach(b=>b.onclick=()=>{ S.view=b.dataset.v; S.smooth={}; renderUI(); });
 $("phB").onclick=()=>{S.phase="before"; renderUI();}; $("phA").onclick=()=>{S.phase="after"; renderUI();};
 async function setModeUI(m){
-  S.mode=m; if(m==="face") S.view="front"; S.smooth={}; S.live=null;
+  S.mode=m; S.view = m==="face" ? "front" : "side"; S.smooth={}; S.live=null;
   screen("capture");
   if (video.videoWidth){ $("msg").hidden=false; $("msgText").textContent="AIモデルを読み込んでいます…"; await getLM(kindOf()); $("msg").hidden=true; }
 }
 $("tPosture").onclick=()=>setModeUI("posture"); $("tFace").onclick=()=>setModeUI("face");
 $("tResult").onclick=()=>showResult();
 $("tCheck").onclick=()=>showCheck();
-$("toAfter").onclick=()=>{ S.phase="after"; S.view="front"; S.smooth={}; screen("capture"); };
+$("toAfter").onclick=()=>{ S.phase="after"; S.view = S.mode==="face" ? "front" : "side"; S.smooth={}; screen("capture"); };
 $("startCam").onclick=startCam; $("shoot").onclick=shoot;
 $("flip").onclick=()=>{ S.facing = S.facing==="user"?"environment":"user"; if (S.stream) startCam(); };
 $("upBtn").onclick=$("upBtn2").onclick=()=>$("file").click();
@@ -878,7 +879,7 @@ function talkLines(rows){
 }
 function showResult(){
   screen("result");
-  const mode=S.mode, views = mode==="face" ? ["front"] : ["front","side"];
+  const mode=S.mode, views = mode==="face" ? ["front"] : ["side"];
   $("resTitle").textContent = `${$("cName").value ? $("cName").value+" 様　" : ""}${mode==="face"?"小顔矯正":"姿勢（仙骨矯正）"}の比較結果`;
   const body = $("resBody"); body.innerHTML="";
   let any=false;
@@ -1255,14 +1256,15 @@ function faceRefHtml(list){
   return `<div class="refwrap"><div class="refbox"><img class="refimg" src="face-line.jpg" alt="フェイスラインの変化による顔の印象の比較イラスト">
       <i class="relabel" style="left:7.42%;width:27.35%;background:rgb(190,97,96)">今のお顔</i>
       <i class="relabel" style="left:47.2%;width:27.47%;background:rgb(176,96,104)">このままだと…</i></div>
-    <div class="yourcase"><h5>あなたの場合、このままだと…</h5>
-      <div class="yc h"><b>健康面</b>${li("health")}</div>
-      <div class="yc b"><b>美容面</b>${li("beauty")}</div></div></div>
-  <div class="explain"><h5>フェイスラインがたるんでいく流れ</h5><ol>
-    <li><b>首・肩のこりや猫背</b>で、顔まわりの血流・リンパの流れが滞りやすくなる</li>
-    <li><b>むくみ</b>や<b>筋膜・表情筋のこわばり</b>で、頬やあご下に重みがたまりやすくなる</li>
-    <li>重力で<b>頬の位置が下がり</b>、輪郭がぼやけて<b>顔が大きく・四角く見えやすく</b>なる</li></ol>
-    <p>→ 姿勢と顔まわりのこりを一緒に整えると、フェイスラインがすっきりしやすくなります。</p></div>`;
+    <div class="side">
+      <div class="explain"><h5>フェイスラインがたるむ流れ</h5><ol>
+        <li><b>首・肩のこり・猫背</b> → 血流・リンパが滞る</li>
+        <li><b>むくみ・こわばり</b> → 頬・あご下に重み</li>
+        <li><b>頬が下がる</b> → 顔が大きく見える</li></ol>
+        <p>→ 姿勢と顔のこりを一緒に整えるのが近道</p></div>
+      <div class="yourcase"><h5>あなたの場合</h5>
+        <div class="yc h"><b>健康面</b>${li("health")}</div>
+        <div class="yc b"><b>美容面</b>${li("beauty")}</div></div></div></div>`;
 }
 function illusHtml(mode, view, m, flags){
   const s=illusSet(mode, view, m, flags);
@@ -1283,7 +1285,7 @@ function illusHtml(mode, view, m, flags){
 function pick(list, kind){ const out=[]; for(let i=0;i<2;i++) list.forEach(r=>{ const x=(r[kind]||[])[i]; if(x && !out.includes(x)) out.push(x); }); return out.slice(0,2); } // 各課題の1番目を優先して混ぜる
 function showCheck(){
   screen("check");
-  const mode=S.mode, views=(mode==="face"?["front"]:["front","side"]).filter(v=>S.shots[key(mode,v,"before")]);
+  const mode=S.mode, views=(mode==="face"?["front"]:["side"]).filter(v=>S.shots[key(mode,v,"before")]);
   $("chkTitle").textContent = `${$("cName").value ? $("cName").value+" 様　" : ""}現状チェック（${mode==="face"?"小顔":"姿勢"}）`;
   const body=$("chkBody"); body.innerHTML="";
   if (!views.length){ body.innerHTML='<p class="note">Before を撮影すると、ここに現状チェックが表示されます。</p>'; return; }
@@ -1312,16 +1314,11 @@ function showCheck(){
     drawOverlay(x,b.lm,mode,v,T,{color:C.before,scale:1,labels:false});
     drawFuture(x,b.lm,mode,v,T,1,b.m);
   });
-  const fut=document.createElement("div"); fut.className="future";
-  fut.innerHTML = futures.length
-    ? `<h4>このまま何もしないと、数年後…</h4><ul>${futures.slice(0,5).map(f=>`<li>${f}なりやすい傾向があります</li>`).join("")}</ul><p style="margin:10px 0 0;font-size:14px;opacity:.85">今日の施術で、この流れがどう変わるか After で確認しましょう。</p>`
-    : `<h4>今の状態をキープしましょう</h4><p style="margin:0">崩れが小さい今のうちのメンテナンスが、一番効率的です。</p>`;
-  body.appendChild(fut);
 }
 
 // ---------- export ----------
 function buildExport(){
-  const mode=S.mode, views=(mode==="face"?["front"]:["front","side"]).filter(v=>S.shots[key(mode,v,"before")]&&S.shots[key(mode,v,"after")]);
+  const mode=S.mode, views=(mode==="face"?["front"]:["side"]).filter(v=>S.shots[key(mode,v,"before")]&&S.shots[key(mode,v,"after")]);
   const W=1600, pad=60, colW=(W-pad*3)/2;
   const parts = views.map(v=>{
     const cb=document.createElement("canvas"), ca=document.createElement("canvas");
@@ -1379,7 +1376,7 @@ $("shareBtn").onclick=()=>{ buildExport().toBlob(async b=>{
   try{ if(navigator.canShare && navigator.canShare({files:[f]})) await navigator.share({files:[f], title:"ビフォーアフター"}); else $("exportBtn").click(); }catch(e){}
 },"image/png"); };
 $("resetBtn").onclick=()=>{ if(!confirm("撮影データを消去して次のお客様へ進みますか？（保存していない画像は消えます）")) return;
-  S.shots={}; S.view="front"; S.phase="before"; $("cName").value=""; $("consent").checked=false; $("adOk").checked=false; setModeUI(S.mode); };
+  S.shots={}; S.view = S.mode==="face" ? "front" : "side"; S.phase="before"; $("cName").value=""; $("consent").checked=false; $("adOk").checked=false; setModeUI(S.mode); };
 
 renderUI();
 </script>
