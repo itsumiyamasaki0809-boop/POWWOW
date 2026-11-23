@@ -78,7 +78,21 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .slot i{position:absolute;left:6px;top:6px;font-style:normal;font-size:11px;padding:2px 8px;border-radius:999px;color:#fff}
 .slot.cur{border:2.5px solid var(--ink)}
 .note{font-size:13px;color:var(--sub);margin:6px 0 0}
-#result[hidden],#capture[hidden]{display:none}
+#result[hidden],#capture[hidden],#check[hidden]{display:none}
+.tab.chk{margin-left:auto;border-color:var(--before);color:var(--before)}
+.tab.chk[aria-pressed=true]{background:var(--before);color:#fff}
+.tab.chk+.tab.res{margin-left:0}
+.risk{border-radius:14px;padding:14px 16px;margin-top:12px;border:1px solid var(--line);background:#fff}
+.risk.alert{border-color:#efc2b8;background:#fdf3f0}.risk.warn{border-color:#f1dcb4;background:#fdf8ee}
+.risk h4{margin:0 0 6px;font-size:17px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.risk h4 .lv{font-size:12px;padding:2px 10px;border-radius:999px;color:#fff}
+.risk.alert .lv{background:var(--bad)}.risk.warn .lv{background:var(--warn)}.risk.info .lv{background:var(--sub)}
+.risk ul{margin:4px 0 0;padding-left:1.2em}.risk li{margin:2px 0}
+.risk small{color:var(--sub)}
+.future{background:var(--ink);color:#fff;border-radius:14px;padding:16px 18px;margin-top:14px}
+.future h4{margin:0 0 8px;font-size:18px;color:#ffb4a3}
+.future ul{margin:0;padding-left:1.2em}.future li{margin:3px 0}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-top:6px}.legend span::before{content:"";display:inline-block;width:18px;height:3px;margin-right:6px;vertical-align:middle;background:var(--c)}
 .resHead{display:flex;flex-wrap:wrap;gap:10px;align-items:end;justify-content:space-between;margin:6px 0 14px}
 .resHead h2{margin:0;font-size:clamp(24px,3.4vw,36px);line-height:1.1}
 .viewBlock{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
@@ -118,6 +132,7 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
   <div class="tabs" role="toolbar">
     <button class="tab" id="tPosture" aria-pressed="true">姿勢（仙骨矯正）</button>
     <button class="tab" id="tFace" aria-pressed="false">小顔矯正</button>
+    <button class="tab chk" id="tCheck" aria-pressed="false">現状チェック</button>
     <button class="tab res" id="tResult" aria-pressed="false">比較結果を見る</button>
   </div>
 
@@ -187,6 +202,15 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
         </div>
       </div>
     </div>
+  </section>
+
+  <section id="check" hidden>
+    <div class="resHead">
+      <h2 id="chkTitle">現状チェック</h2>
+      <div class="row"><button class="btn pri" id="toAfter">施術へ進む（After撮影へ）</button></div>
+    </div>
+    <div id="chkBody"></div>
+    <p class="disc">※ 「このままだと」の図は、現在の姿勢・顔の傾向を強調して描いたイメージです。将来の状態を予測・保証するものではありません。</p>
   </section>
 
   <section id="result" hidden>
@@ -276,6 +300,68 @@ const DEFS = {
     {k:"skinEven", sec:"肌のトーン", label:"肌のムラ（明るさのばらつき）", kind:"val", better:"low", tol:.3, say:d=>`肌の明るさのムラが減り、均一になりました`}
   ]
 };
+
+// ---------- Before 現状チェック：このままだと起こりやすいこと ----------
+// bad:"abs" = 値の絶対値が大きいほど注意 / "low" = 値が小さいほど注意
+const RISKS = {
+  "posture-side":[
+    {k:"headFwd", bad:"abs", warn:10, alert:18, title:"頭が前に出ています（ストレートネック傾向）",
+      risks:["首・肩のこりが慢性化しやすい","あご下に肉がつき、二重あご・フェイスラインのたるみにつながりやすい","頭の重さで背中が丸まり、猫背が進みやすい"],
+      future:"首が前に出たまま固まり、二重あごや顔のたるみが目立つように"},
+    {k:"trunk", bad:"abs", warn:4, alert:8, title:"上半身が前に傾いています（猫背傾向）",
+      risks:["呼吸が浅くなり、代謝が落ちて痩せにくくなりやすい","お腹の力が抜け、ぽっこりお腹・腰回りに肉がつきやすい","背中や二の腕に脂肪がつきやすく、老けた印象に見えやすい"],
+      future:"猫背が進み、お腹や腰回りに肉がついて、痩せにくく太りやすい体に"},
+    {k:"pelvisShift", bad:"abs", warn:3, alert:6,
+      title:v=>v>0?"骨盤が前に突き出ています（スウェイバック傾向）":"骨盤が後ろに引けています（反り腰傾向）",
+      risks:v=>v>0?["下腹がぽっこり出やすい","お尻が垂れ、太ももの前側が張りやすい","腰回りが重だるくなりやすい"]:["腰が反って腰に負担がかかりやすい","下腹が前に出て、ぽっこりお腹に見えやすい","太ももの前側が張り、脚が太く見えやすい"],
+      future:v=>v>0?"下腹ぽっこり・垂れ尻が定着し、パンツが似合いにくい体型に":"反り腰が進み、腰の重だるさと下腹ぽっこりが抜けにくい体に"},
+    {k:"plumb", bad:"abs", warn:3, alert:6, title:"重心線がずれています",
+      risks:["一部の筋肉に負担が集中し、むくみや脚の張りが出やすい","バランスを取ろうとして、他の部分もゆがみやすい"],
+      future:"むくみや脚の張りが抜けにくくなり、脚が太く見える体型に"}
+  ],
+  "posture-front":[
+    {k:"shoulder", bad:"abs", warn:2, alert:4, title:"肩の高さに左右差があります",
+      risks:["片側だけ肩こりがひどくなりやすい","首や顔にもゆがみが広がり、顔の左右差につながりやすい"],
+      future:"片側の肩こりが慢性化し、顔の左右差まで目立つように"},
+    {k:"pelvis", bad:"abs", warn:2, alert:4, title:"骨盤が傾いています",
+      risks:["骨盤まわり・腰回りに脂肪がつきやすく、下半身太りにつながりやすい","脚のむくみや、左右の脚の太さの差が出やすい","腰や股関節に負担がかかりやすい"],
+      future:"骨盤のゆがみが進み、下半身太り・脚の太さの左右差が目立つように"},
+    {k:"head", bad:"abs", warn:2.5, alert:5, title:"頭が傾いています",
+      risks:["首こり・頭の重さを感じやすい","顔の左右差やたるみ方の差が出やすい"],
+      future:"首のこりと顔の左右差が定着した状態に"},
+    {k:"axis", bad:"abs", warn:1.5, alert:3, title:"体の中心軸が傾いています",
+      risks:["片側の脚に体重がかかり、骨盤のゆがみが進みやすい","姿勢のくずれが全身に広がりやすい"],
+      future:"体の傾きが全身に広がり、部分的に痩せにくい体に"}
+  ],
+  "face-front":[
+    {k:"mouth", bad:"low", warn:.8, alert:0, title:"口角が下がり気味です",
+      risks:["への字口になり、不機嫌・疲れた印象に見えやすい","ほうれい線・マリオネットラインが深くなりやすい"],
+      future:"口角が下がり、ほうれい線やマリオネットラインが刻まれた老け見え顔に"},
+    {k:"eyeTail", bad:"low", warn:3, alert:0, title:"目尻が下がり気味です",
+      risks:["疲れ顔・老け顔に見えやすい","目元のたるみ・まぶたの重さにつながりやすい"],
+      future:"目尻のたるみが進み、疲れて見える目元に"},
+    {k:"eyeOpen", bad:"low", warn:8, alert:6.5, title:"目の開きが小さめです",
+      risks:["まぶたが重く、眠そうな印象に見えやすい","目元にむくみがたまりやすい"],
+      future:"まぶたが下がり、目が小さく見えるように"},
+    {always:true, title:"フェイスラインは年齢とともに下がる傾向があります",
+      risks:["筋膜や表情筋がこわばると血流が滞り、むくみ・くすみが出やすい","頬の位置が下がると、ほうれい線やフェイスラインのもたつきにつながりやすい"],
+      future:"頬とフェイスラインが年々下がり、顔が大きく・四角く見えるように"}
+  ]
+};
+function evalRisks(gk, m){
+  const out=[];
+  (RISKS[gk]||[]).forEach(r=>{
+    let lv=null; const v=m[r.k];
+    if (r.always) lv="info";
+    else if (v==null) return;
+    else if (r.bad==="abs"){ const a=Math.abs(v); lv = a>=r.alert?"alert":a>=r.warn?"warn":null; }
+    else { lv = v<=r.alert?"alert":v<=r.warn?"warn":null; }
+    if (!lv) return;
+    const f = x => typeof x==="function" ? x(v) : x;
+    out.push({k:r.k, lv, title:f(r.title), risks:f(r.risks), future:f(r.future)});
+  });
+  const rank={alert:0,warn:1,info:2}; return out.sort((a,b)=>rank[a.lv]-rank[b.lv]);
+}
 const MM_IPD = 62;
 const EYE_L = [33,246,161,160,159,158,157,173,133,155,154,153,145,144,163,7];
 const EYE_R = [263,466,388,387,386,385,384,398,362,382,381,380,374,373,390,249];
@@ -424,7 +510,8 @@ function label(ctx, text, x, y, color, size, alignRight){
 }
 // T: 正規化座標 -> 描画座標
 function drawOverlay(ctx, lm, mode, view, T, opt){
-  const {color, scale=1, dashed=false, labels=true, metrics=null} = opt;
+  const {color, scale=1, dashed=false, labels=true, metrics=null, only=null} = opt;
+  const show = k => !only || only.has(k);
   const lw = Math.max(2, 3*scale), fs = Math.max(12, 22*scale);
   ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=lw;
   if (dashed) ctx.setLineDash([lw*3, lw*2.5]);
@@ -453,10 +540,10 @@ function drawOverlay(ctx, lm, mode, view, T, opt){
     }
     if (labels && metrics){
       const right = Math.max(wr.x, wl.x)+fs*.3, left = Math.min(wr.x, wl.x)-fs*.3;
-      label(ctx, `頬 ${metrics.cheek.toFixed(1)}`, left, t(50).y, color, fs, true);
-      label(ctx, `ライン ${metrics.jaw.toFixed(1)}`, left, t(172).y+fs*.4, color, fs, true);
-      label(ctx, `目 ${metrics.eyeOpen.toFixed(1)}`, right, er.y-fs*.4, color, fs);
-      label(ctx, `口角 ${metrics.mouth.toFixed(1)}`, right, t(291).y+fs*.4, color, fs);
+      if(show("cheek")) label(ctx, `頬 ${metrics.cheek.toFixed(1)}`, left, t(50).y, color, fs, true);
+      if(show("jaw")) label(ctx, `ライン ${metrics.jaw.toFixed(1)}`, left, t(172).y+fs*.4, color, fs, true);
+      if(show("eyeOpen")) label(ctx, `目 ${metrics.eyeOpen.toFixed(1)}`, right, er.y-fs*.4, color, fs);
+      if(show("mouth")) label(ctx, `口角 ${metrics.mouth.toFixed(1)}`, right, t(291).y+fs*.4, color, fs);
     }
   } else if (view==="front"){
     POSE_LINKS.forEach(([a,b])=>line(t(a),t(b)));
@@ -471,9 +558,9 @@ function drawOverlay(ctx, lm, mode, view, T, opt){
     line(s1,s2,lw*1.4); line(h1,h2,lw*1.4);
     if (labels && metrics){
       const rx = Math.max(s1.x,s2.x,h1.x,h2.x)+fs*.4;
-      label(ctx, `肩 ${Math.abs(metrics.shoulder).toFixed(1)}°`, rx, (s1.y+s2.y)/2, color, fs);
-      label(ctx, `骨盤 ${Math.abs(metrics.pelvis).toFixed(1)}°`, rx, (h1.y+h2.y)/2, color, fs);
-      label(ctx, `軸 ${Math.abs(metrics.axis).toFixed(1)}°`, ank.x+fs*.4, (ank.y+sh.y)/2+fs*2, color, fs);
+      if(show("shoulder")) label(ctx, `肩 ${Math.abs(metrics.shoulder).toFixed(1)}°`, rx, (s1.y+s2.y)/2, color, fs);
+      if(show("pelvis")) label(ctx, `骨盤 ${Math.abs(metrics.pelvis).toFixed(1)}°`, rx, (h1.y+h2.y)/2, color, fs);
+      if(show("axis")) label(ctx, `軸 ${Math.abs(metrics.axis).toFixed(1)}°`, ank.x+fs*.4, (ank.y+sh.y)/2+fs*2, color, fs);
     }
   } else {
     const s = sideOf(lm), ids=[s.ear,s.sh,s.hip,s.knee,s.ank];
@@ -487,10 +574,59 @@ function drawOverlay(ctx, lm, mode, view, T, opt){
     pts.slice(0,4).forEach(q=>{ ctx.globalAlpha=.6; line(q,{x:ank.x,y:q.y},lw*.7); ctx.globalAlpha=1; });
     if (labels && metrics){
       const dir = T(lm[0]).x > pts[0].x ? 1 : -1, off = dir>0 ? -fs*7.2 : fs*.8;
-      label(ctx, `頭 ${metrics.headFwd.toFixed(1)}°`, pts[0].x+off, pts[0].y, color, fs);
-      label(ctx, `上体 ${metrics.trunk.toFixed(1)}°`, pts[1].x+off, pts[1].y+fs, color, fs);
-      label(ctx, `骨盤 ${metrics.pelvisShift.toFixed(1)}°`, pts[2].x+off, pts[2].y, color, fs);
+      if(show("headFwd")) label(ctx, `頭 ${metrics.headFwd.toFixed(1)}°`, pts[0].x+off, pts[0].y, color, fs);
+      if(show("trunk")) label(ctx, `上体 ${metrics.trunk.toFixed(1)}°`, pts[1].x+off, pts[1].y+fs, color, fs);
+      if(show("pelvisShift")) label(ctx, `骨盤 ${metrics.pelvisShift.toFixed(1)}°`, pts[2].x+off, pts[2].y, color, fs);
     }
+  }
+  ctx.restore();
+}
+
+
+// 「このままだと」イメージ：現在の傾向を強調した線を赤い点線で描く
+function drawFuture(ctx, lm, mode, view, T, scale, m){
+  const col="#d23c2a", lw=Math.max(2,3.2*scale), fs=Math.max(12,22*scale);
+  ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=lw; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.setLineDash([lw*2.6,lw*2]);
+  const line=(a,b)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();};
+  const dot=(a,r=lw*1.8)=>{ctx.beginPath();ctx.arc(a.x,a.y,r,0,Math.PI*2);ctx.fill();};
+  if (mode==="face"){
+    const t=i=>T(lm[i]);
+    const el=mid(t(33),t(133)), er=mid(t(263),t(362)), dl=dist(el,er), ux=(er.x-el.x)/dl, uy=(er.y-el.y)/dl;
+    const cx=mid(t(234),t(454)), fw=dist(t(234),t(454));
+    const below=q=>(q.x-el.x)*(-uy)+(q.y-el.y)*ux;
+    const sag=q=>{ const b=below(q); if(b<=0) return q; const k=b*.07, side=(q.x-cx.x)/fw; const out=b>dl*.9 ? side*fw*.05 : 0; return {x:q.x+out, y:q.y+k}; };
+    ctx.beginPath(); OVAL.forEach((i,n)=>{const q=sag(t(i)); n?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);}); ctx.closePath(); ctx.stroke();
+    const mc=mid(t(13),t(14)), drop=dl*.12;
+    [61,291].forEach(i=>{const q=t(i); line(mc,{x:q.x,y:q.y+drop}); dot({x:q.x,y:q.y+drop});});
+    [50,280].forEach(i=>{const q=sag(t(i)); dot({x:q.x,y:q.y+dl*.08});});
+    label(ctx,"このままだと…", Math.max(t(234).x,t(454).x)+fs*.3, t(152).y, col, fs);
+  } else if (view==="side"){
+    const sd=sideOf(lm), P5=[sd.ear,sd.sh,sd.hip,sd.knee,sd.ank].map(i=>T(lm[i]));
+    const [ear,sh,hip,knee,ank]=P5, dir=T(lm[0]).x>ear.x?1:-1, H=ank.y-ear.y;
+    const mv=(q,gain,fx,fy)=>({x:q.x+(q.x-ank.x)*gain+dir*H*fx, y:q.y+H*fy});
+    const F=[mv(ear,1,.11,.035), mv(sh,1,.06,.015), mv(hip,.8,.025,0), mv(knee,.6,.01,0), ank];
+    ctx.beginPath(); ctx.moveTo(F[1].x,F[1].y);
+    const back=mid(F[1],F[2]); ctx.quadraticCurveTo(back.x-dir*H*.07, back.y, F[2].x, F[2].y); ctx.stroke(); // 丸まった背中
+    ctx.globalAlpha=.7; const belly=mid(F[1],F[2]); ctx.beginPath(); ctx.moveTo(F[1].x+dir*H*.03,F[1].y+H*.06);
+    ctx.quadraticCurveTo(belly.x+dir*H*.11, belly.y+H*.08, F[2].x+dir*H*.05, F[2].y+H*.02); ctx.stroke(); ctx.globalAlpha=1; // お腹のぽっこり
+    line(F[0],F[1]); line(F[2],F[3]); line(F[3],F[4]);
+    ctx.setLineDash([]); ctx.beginPath(); ctx.arc(F[0].x+dir*H*.02, F[0].y-H*.01, H*.055, 0, Math.PI*2); ctx.stroke();
+    F.forEach(q=>dot(q));
+    label(ctx,"このままだと…", F[0].x+(dir>0?fs*.8:-fs*7), F[0].y-H*.08, col, fs);
+  } else {
+    const t=i=>T(lm[i]);
+    const rot=(a,b,extra)=>{ const c=mid(a,b), L=dist(a,b)/2*1.08, ang=Math.atan2(b.y-a.y,b.x-a.x)+extra*Math.PI/180; return [{x:c.x-Math.cos(ang)*L,y:c.y-Math.sin(ang)*L},{x:c.x+Math.cos(ang)*L,y:c.y+Math.sin(ang)*L}]; };
+    const sgn=v=>v>=0?1:-1;
+    const ss=sgn(m.shoulder), ps=Math.abs(m.pelvis)>.5?sgn(m.pelvis):-ss;
+    const [s1,s2]=rot(t(11),t(12), ss*Math.max(2.5,Math.abs(m.shoulder)));
+    const [h1,h2]=rot(t(23),t(24), ps*Math.max(2,Math.abs(m.pelvis)));
+    const hw=dist(h1,h2)*.08, hu={x:(h2.x-h1.x)/dist(h1,h2), y:(h2.y-h1.y)/dist(h1,h2)};
+    line(s1,s2); line({x:h1.x-hu.x*hw,y:h1.y-hu.y*hw},{x:h2.x+hu.x*hw,y:h2.y+hu.y*hw}); // 腰回りが広がるイメージ
+    const sm=mid(s1,s2), hm=mid(h1,h2), H=dist(sm,hm);
+    ctx.beginPath(); ctx.moveTo(hm.x,hm.y); ctx.quadraticCurveTo((sm.x+hm.x)/2-ss*H*.12,(sm.y+hm.y)/2,sm.x,sm.y); ctx.stroke(); // 背骨のゆがみ
+    const hd=t(0), r=dist(t(7),t(8))*.65, tilt=ss*H*.08;
+    ctx.setLineDash([]); ctx.beginPath(); ctx.ellipse(hd.x+tilt*.6, hd.y, r, r*1.2, ss*.12, 0, Math.PI*2); ctx.stroke();
+    label(ctx,"このままだと…", Math.max(s1.x,s2.x)+fs*.4, sm.y-fs*1.2, col, fs);
   }
   ctx.restore();
 }
@@ -589,10 +725,12 @@ async function analyzeAndStore(canvas){
 function advance(){
   // 次に撮るべき枠へ自動で進む
   const order = S.mode==="face" ? [["front","before"],["front","after"]] : [["front","before"],["side","before"],["front","after"],["side","after"]];
+  const justBefore = S.phase==="before";
   const next = order.find(([v,p]) => !S.shots[key(S.mode,v,p)]);
   if (next){ S.view = next[0]; S.phase = next[1]; }
   S.smooth = {}; renderUI();
   if (!next) showResult();
+  else if (justBefore && next[1]==="after") showCheck();
 }
 async function shoot(){
   if (!$("consent").checked){ toast("撮影前にお客様の同意を確認し、チェックを入れてください。"); return; }
@@ -612,10 +750,13 @@ async function fromFile(file){
 function toast(t){ const m=$("msg"); const wasHidden=m.hidden; $("msgText").textContent=t; m.hidden=false; setTimeout(()=>{ if(wasHidden && video.videoWidth){ m.hidden=true; } },2600); }
 
 // ---------- UI ----------
+function screen(n){ S.screen=n; ["capture","check","result"].forEach(id=>$(id).hidden = id!==n); renderUI(); window.scrollTo(0,0); }
 function renderUI(){
-  $("tPosture").setAttribute("aria-pressed", S.mode==="posture" && $("result").hidden);
-  $("tFace").setAttribute("aria-pressed", S.mode==="face" && $("result").hidden);
-  $("tResult").setAttribute("aria-pressed", !$("result").hidden);
+  const sc=S.screen||"capture";
+  $("tPosture").setAttribute("aria-pressed", S.mode==="posture" && sc==="capture");
+  $("tFace").setAttribute("aria-pressed", S.mode==="face" && sc==="capture");
+  $("tCheck").setAttribute("aria-pressed", sc==="check");
+  $("tResult").setAttribute("aria-pressed", sc==="result");
   $("viewSeg").style.display = S.mode==="face" ? "none" : "";
   $("viewTitle").textContent = S.mode==="face" ? "小顔：正面で撮影（真顔・髪を耳にかける）" : "撮影する向き";
   document.querySelectorAll("#viewSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===S.view));
@@ -634,11 +775,13 @@ document.querySelectorAll("#viewSeg button").forEach(b=>b.onclick=()=>{ S.view=b
 $("phB").onclick=()=>{S.phase="before"; renderUI();}; $("phA").onclick=()=>{S.phase="after"; renderUI();};
 async function setModeUI(m){
   S.mode=m; if(m==="face") S.view="front"; S.smooth={}; S.live=null;
-  $("result").hidden=true; $("capture").hidden=false; renderUI();
+  screen("capture");
   if (video.videoWidth){ $("msg").hidden=false; $("msgText").textContent="AIモデルを読み込んでいます…"; await getLM(kindOf()); $("msg").hidden=true; }
 }
 $("tPosture").onclick=()=>setModeUI("posture"); $("tFace").onclick=()=>setModeUI("face");
 $("tResult").onclick=()=>showResult();
+$("tCheck").onclick=()=>showCheck();
+$("toAfter").onclick=()=>{ S.phase="after"; S.view="front"; S.smooth={}; screen("capture"); };
 $("startCam").onclick=startCam; $("shoot").onclick=shoot;
 $("flip").onclick=()=>{ S.facing = S.facing==="user"?"environment":"user"; if (S.stream) startCam(); };
 $("upBtn").onclick=$("upBtn2").onclick=()=>$("file").click();
@@ -660,9 +803,9 @@ function drawShot(c2, shot, mode, view, color, dw){
   if (ex>sx && ey>sy) x.drawImage(shot.canvas, sx,sy,ex-sx,ey-sy, (sx-r.x)*k,(sy-r.y)*k,(ex-sx)*k,(ey-sy)*k);
   return {x, T: q => ({x:(q.x*shot.w-r.x)*k, y:(q.y*shot.h-r.y)*k}), dh};
 }
-function renderAnnotated(c2, shot, mode, view, color, dw){
+function renderAnnotated(c2, shot, mode, view, color, dw, only){
   const {x,T} = drawShot(c2, shot, mode, view, color, dw);
-  drawOverlay(x, shot.lm, mode, view, T, {color, scale: dw/700, labels:true, metrics:shot.m});
+  drawOverlay(x, shot.lm, mode, view, T, {color, scale: dw/700, labels:true, metrics:shot.m, only});
 }
 function compare(def, b, a){
   const bt = betterOf(def);
@@ -686,7 +829,7 @@ function talkLines(rows){
   return rows.filter(r=>r.improved===1).map(r=> r.d.say ? r.d.say(r.delta) : `${r.d.talk}が ${fmtVal(r.d,r.bv)} → ${fmtVal(r.d,r.av)} に改善しました`);
 }
 function showResult(){
-  $("capture").hidden=true; $("result").hidden=false; renderUI();
+  screen("result");
   const mode=S.mode, views = mode==="face" ? ["front"] : ["front","side"];
   $("resTitle").textContent = `${$("cName").value ? $("cName").value+" 様　" : ""}${mode==="face"?"小顔矯正":"姿勢（仙骨矯正）"}の比較結果`;
   const body = $("resBody"); body.innerHTML="";
@@ -697,21 +840,26 @@ function showResult(){
     const name = mode==="face" ? "正面（フェイスライン）" : v==="front" ? "正面（左右バランス）" : "側面（前後バランス・重心線）";
     if(!b||!a){ blk.innerHTML=`<h3>${name}</h3><p class="note">${!b?"Before":"After"} が未撮影です。</p>`; body.appendChild(blk); return; }
     any=true;
-    const rows=resultRows(mode,v), talks=talkLines(rows);
+    const rows=resultRows(mode,v), talks=talkLines(rows), good=rows.filter(r=>r.improved===1);
     blk.innerHTML = `<h3>${name}</h3>
       <div class="pair"><figure><figcaption style="color:${C.before}">Before 施術前</figcaption><canvas></canvas></figure><figure><figcaption style="color:${C.after}">After 施術後</figcaption><canvas></canvas></figure></div>
       <div class="wipe"><canvas></canvas><input type="range" min="0" max="100" value="50" aria-label="Before/After スライダー"><div class="lbl"><span style="color:${C.before}">← Before</span><span style="color:${C.after}">After →</span></div></div>
+      ${good.length ? `<table><thead><tr><th>改善したポイント</th><th>Before</th><th>After</th><th>変化</th></tr></thead><tbody>
+      ${good.map((r,i)=>`${r.d.sec && r.d.sec!==(good[i-1]||{d:{}}).d.sec ? `<tr><td colspan="4" style="font-weight:700;padding-top:16px;border-bottom:2px solid var(--ink)">${r.d.sec}</td></tr>`:""}<tr><td>${r.d.label}</td><td class="b">${fmtVal(r.d,r.bv)}</td><td class="a">${fmtVal(r.d,r.av)}</td><td><span class="badge up">${r.txt}</span></td></tr>`).join("")}
+      </tbody></table>` : `<p class="note" style="font-size:15px">今回は計測上の大きな変化は誤差の範囲でした。写真の見た目の変化をご確認ください。</p>`}
+      <details style="margin-top:10px"><summary class="note" style="cursor:pointer">スタッフ用：すべての計測値を見る</summary>
       <table><thead><tr><th>計測項目</th><th>Before</th><th>After</th><th>変化</th><th></th></tr></thead><tbody>
       ${rows.map((r,i)=>`${r.d.sec && r.d.sec!==(rows[i-1]||{d:{}}).d.sec ? `<tr><td colspan="5" style="font-weight:700;padding-top:16px;border-bottom:2px solid var(--ink)">${r.d.sec}</td></tr>`:""}<tr><td>${r.d.label}${r.bdir?`<br><small style="color:var(--sub)">施術前：${r.bdir}</small>`:""}</td><td class="b">${fmtVal(r.d,r.bv)}</td><td class="a">${fmtVal(r.d,r.av)}</td><td>${r.txt}</td><td><span class="badge ${r.improved>0?"up":r.improved<0?"dn":"eq"}">${r.improved>0?"改善":r.improved<0?"要確認":"誤差範囲"}</span></td></tr>`).join("")}
-      </tbody></table>
-      ${mode==="face" && b.m.skinRGB ? `<div class="swatches"><b style="font-size:14px">頬の肌色</b>
+      </tbody></table></details>
+      ${mode==="face" && b.m.skinRGB && good.some(r=>r.d.sec==="肌のトーン") ? `<div class="swatches"><b style="font-size:14px">頬の肌色</b>
         <span class="sw"><i style="background:rgb(${b.m.skinRGB})"></i>Before</span>
         <span class="sw"><i style="background:rgb(${a.m.skinRGB})"></i>After</span>
         <span class="note" style="margin:0">点線の円の範囲を測定。照明の違いは背景の色で補正しています。</span></div>` : ""}
       ${talks.length?`<div class="talk"><h4>お客様へのご説明</h4><ul>${talks.map(t=>`<li>${t}</li>`).join("")}</ul></div>`:""}`;
     body.appendChild(blk);
     const [cb, ca] = blk.querySelectorAll(".pair canvas");
-    renderAnnotated(cb, b, mode, v, C.before, 700); renderAnnotated(ca, a, mode, v, C.after, 700);
+    const only = new Set(good.map(r=>r.d.k));
+    renderAnnotated(cb, b, mode, v, C.before, 700, only); renderAnnotated(ca, a, mode, v, C.after, 700, only);
     const wc = blk.querySelector(".wipe canvas"), rg = blk.querySelector(".wipe input");
     const bi=document.createElement("canvas"), ai=document.createElement("canvas");
     drawShot(bi,b,mode,v,C.before,700); drawShot(ai,a,mode,v,C.after,700);
@@ -723,17 +871,52 @@ function showResult(){
   $("exportBtn").disabled = $("shareBtn").disabled = !any;
 }
 
+
+// ---------- 現状チェック画面 ----------
+function showCheck(){
+  screen("check");
+  const mode=S.mode, views=(mode==="face"?["front"]:["front","side"]).filter(v=>S.shots[key(mode,v,"before")]);
+  $("chkTitle").textContent = `${$("cName").value ? $("cName").value+" 様　" : ""}現状チェック（${mode==="face"?"小顔":"姿勢"}）`;
+  const body=$("chkBody"); body.innerHTML="";
+  if (!views.length){ body.innerHTML='<p class="note">Before を撮影すると、ここに現状チェックが表示されます。</p>'; return; }
+  const futures=[];
+  views.forEach(v=>{
+    const b=S.shots[key(mode,v,"before")], gk=groupKey(mode,v), list=evalRisks(gk,b.m);
+    list.forEach(r=>{ if(r.future && !futures.includes(r.future)) futures.push(r.future); });
+    const name = mode==="face" ? "お顔（正面）" : v==="front" ? "正面（左右バランス）" : "側面（前後バランス）";
+    const blk=document.createElement("div"); blk.className="viewBlock";
+    const flagged=list.filter(r=>r.lv!=="info");
+    blk.innerHTML = `<h3>${name}</h3>
+      <div class="pair"><figure><canvas></canvas>
+        <div class="legend"><span style="--c:${C.before}">今のあなた</span><span style="--c:#d23c2a">このままだと…（イメージ）</span></div></figure>
+      <div>${flagged.length?"":`<div class="risk info"><h4>大きな崩れは見られません</h4><small>今の良い状態をキープするための定期メンテナンスがおすすめです。</small></div>`}
+      ${list.map(r=>`<div class="risk ${r.lv}"><h4><span class="lv">${r.lv==="alert"?"要注意":r.lv==="warn"?"注意":"知っておきたいこと"}</span>${r.title}</h4>
+        <small>このままだと…</small><ul>${r.risks.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div></div>`;
+    body.appendChild(blk);
+    const cv2=blk.querySelector("canvas");
+    const {x,T}=drawShot(cv2,b,mode,v,C.before,700);
+    drawOverlay(x,b.lm,mode,v,T,{color:C.before,scale:1,labels:false});
+    drawFuture(x,b.lm,mode,v,T,1,b.m);
+  });
+  const fut=document.createElement("div"); fut.className="future";
+  fut.innerHTML = futures.length
+    ? `<h4>このまま何もしないと、数年後…</h4><ul>${futures.slice(0,5).map(f=>`<li>${f}なりやすい傾向があります</li>`).join("")}</ul><p style="margin:10px 0 0;font-size:14px;opacity:.85">今日の施術で、この流れがどう変わるか After で確認しましょう。</p>`
+    : `<h4>今の状態をキープしましょう</h4><p style="margin:0">崩れが小さい今のうちのメンテナンスが、一番効率的です。</p>`;
+  body.appendChild(fut);
+}
+
 // ---------- export ----------
 function buildExport(){
   const mode=S.mode, views=(mode==="face"?["front"]:["front","side"]).filter(v=>S.shots[key(mode,v,"before")]&&S.shots[key(mode,v,"after")]);
   const W=1600, pad=60, colW=(W-pad*3)/2;
   const parts = views.map(v=>{
     const cb=document.createElement("canvas"), ca=document.createElement("canvas");
-    renderAnnotated(cb,S.shots[key(mode,v,"before")],mode,v,C.before,colW); renderAnnotated(ca,S.shots[key(mode,v,"after")],mode,v,C.after,colW);
-    const rows=resultRows(mode,v);
+    const only=new Set(resultRows(mode,v).filter(r=>r.improved===1).map(r=>r.d.k));
+    renderAnnotated(cb,S.shots[key(mode,v,"before")],mode,v,C.before,colW,only); renderAnnotated(ca,S.shots[key(mode,v,"after")],mode,v,C.after,colW,only);
+    const all=resultRows(mode,v), rows=all.filter(r=>r.improved===1);
     return {v, cb, ca, rows, talks: talkLines(rows), b:S.shots[key(mode,v,"before")], a:S.shots[key(mode,v,"after")]};
   });
-  const rowH=58, H = 190 + parts.reduce((s,p)=>s+70+p.cb.height+40+p.rows.length*rowH+50+(mode==="face"?130:0)+(p.talks.length?70+p.talks.length*44:0),0) + 110;
+  const rowH=58, H = 190 + parts.reduce((s,p)=>s+70+p.cb.height+40+p.rows.length*rowH+50+(mode==="face"&&p.rows.some(r=>r.d.sec==="肌のトーン")?130:0)+(p.talks.length?70+p.talks.length*44:0),0) + 110;
   const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
   const F = (w,s)=>`${w} ${s}px "Zen Kaku Gothic New","Hiragino Sans",sans-serif`;
   x.fillStyle="#f7f5f2"; x.fillRect(0,0,W,H);
@@ -753,10 +936,10 @@ function buildExport(){
       x.textAlign="right"; x.fillStyle=C.before; x.fillText(fmtVal(r.d,r.bv), 1000, y+36);
       x.fillStyle=C.ink; x.fillText("→",1060,y+36);
       x.fillStyle=C.after; x.font=F(700,28); x.fillText(fmtVal(r.d,r.av), 1190, y+36);
-      x.font=F(700,24); x.fillStyle = r.improved>0?C.ok:"#8a817a"; x.fillText(r.improved>0?`改善 ${r.txt}`:"誤差範囲", W-pad-20, y+36);
+      x.font=F(700,24); x.fillStyle = r.improved>0?C.ok:"#8a817a"; x.fillText(`改善 ${r.txt}`, W-pad-20, y+36);
       x.textAlign="left"; y+=rowH;
     });
-    if (mode==="face" && p.b.m.skinRGB){
+    if (mode==="face" && p.b.m.skinRGB && p.rows.some(r=>r.d.sec==="肌のトーン")){
       y+=30; x.fillStyle=C.ink; x.font=F(700,26); x.fillText("頬の肌色", pad, y+55);
       [[p.b,"Before",C.before],[p.a,"After",C.after]].forEach(([s,t,col],i)=>{
         const sx=pad+170+i*260; x.fillStyle=`rgb(${s.m.skinRGB})`; x.beginPath(); x.roundRect(sx,y,90,90,16); x.fill();
