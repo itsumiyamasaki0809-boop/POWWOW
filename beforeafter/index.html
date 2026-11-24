@@ -107,18 +107,17 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .top1 h4{margin:8px 0 6px;font-size:20px;color:var(--pinkd);line-height:1.4}
 .top1 .ev{margin:0 0 8px;font-size:16px;font-weight:700}
 .top1 .ev b{display:inline-block;font-size:12px;color:var(--pinkd);border:1px solid var(--pink);border-radius:6px;padding:0 6px;margin-right:8px;vertical-align:2px}
-.chain{list-style:none;margin:0;padding:0;counter-reset:c}
-.chain li{position:relative;padding:6px 10px 6px 34px;background:var(--pale);border-radius:10px;margin-bottom:18px;font-size:15px}
-.chain li::before{counter-increment:c;content:counter(c);position:absolute;left:8px;top:7px;width:20px;height:20px;border-radius:50%;background:var(--pink);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
-.chain li:not(:last-child)::after{content:"↓";position:absolute;left:14px;bottom:-18px;color:var(--pink);font-weight:700}
-.chain li:last-child{margin-bottom:0;background:#fde3ea;font-weight:700}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chain span{background:var(--pale);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:500}
+.chain span:last-child{background:#fde3ea;color:var(--pinkd);font-weight:700}
+.chain i{font-style:normal;color:var(--pink);font-weight:700}
 .symsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
 .symsel b{width:100%;font-size:14px;color:var(--pinkd)}
 .symbtn{min-height:44px;padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);cursor:pointer;font-size:14px}
 .symbtn[aria-pressed=true]{background:var(--pink);border-color:var(--pink);color:#fff;font-weight:700}
 .symlink{background:#fff7f9;border:1px solid #f6c6d4;border-radius:14px;padding:12px 16px;margin-bottom:12px}
 .symlink h5{margin:0 0 8px;font-size:16px;color:var(--pinkd)}
-.symlink p{margin:0 0 10px;font-size:15px;line-height:1.6}
+.symlink ul{list-style:none;margin:0;padding:0}.symlink li{margin:0 0 6px;font-size:15px;font-weight:500}
 .symlink .sy{display:inline-block;background:var(--pink);color:#fff;font-size:12px;font-weight:700;padding:1px 10px;border-radius:999px;margin-right:6px}
 .symlink b{color:var(--pinkd)}
 .symlink .close{margin:0;font-weight:700}
@@ -146,6 +145,9 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .care-chart-section{padding:3rem 0 1rem;max-width:900px;margin:0 auto}
 .section-title{font-size:clamp(1.25rem,4vw,1.5rem);font-weight:500;color:var(--pinkd);text-align:center;margin:0 0 2rem;position:relative;padding-bottom:1rem}
 .section-title::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:2.5rem;height:1px;background:var(--pink)}
+.care-points{list-style:none;padding:0;margin:0 auto 1.6rem;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.care-points li{background:#fff;border:1px solid #f6b3c8;border-radius:999px;padding:6px 16px;font-weight:500;color:var(--ink)}
+.care-points b{color:var(--pinkd)}
 .care-chart-lead{font-size:1rem;line-height:1.9;color:#AD1457;text-align:center;margin:0 0 2rem}
 .care-chart-img-wrap{background:#fff;border-radius:12px;padding:.75rem;box-shadow:0 4px 15px rgba(233,30,99,.08)}
 .care-chart-img-wrap img{width:100%;height:auto;border-radius:6px;display:block}
@@ -181,7 +183,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .approach-content{flex:1;position:relative;z-index:1}
 .approach-title{font-weight:300;font-size:clamp(1.4rem,4vw,1.9rem);color:#fff;line-height:1.8;margin:0 0 1rem}
 .approach-title strong{color:#FFEB3B;font-weight:500}
-.approach-body{font-size:1.1rem;color:rgba(255,255,255,.92);line-height:1.95;margin:0}
+.approach-body{font-size:1.15rem;color:rgba(255,255,255,.95);line-height:1.9;margin:0;padding-left:1.2em}
 .approach-image-wrap{flex-shrink:0;position:relative;z-index:1;background:rgba(0,0,0,.1);padding:1rem;border-radius:100%}
 .pelvis-illustration{width:12rem;height:auto;overflow:visible;display:block}
 .benefits{background:var(--line);border-radius:16px;padding:3rem 1.5rem;margin:2.5rem auto 0;max-width:1130px}
@@ -191,7 +193,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--after)}
 .benefit .bn{font-family:"Cormorant Garamond","Noto Serif JP",serif;font-style:italic;font-size:2.4rem;color:var(--pink);line-height:1}
 .benefit h4{margin:.4rem 0 .5rem;font-size:1.05rem;font-weight:500}
 .benefit h4 em{font-style:normal;color:var(--pinkd);background:linear-gradient(transparent 70%,#F48FB1 70%)}
-.benefit p{margin:0;font-size:.92rem;line-height:1.75;color:#7a3550}
+.benefit p{margin:0;font-size:1rem;line-height:1.6;color:#7a3550;font-weight:500}
 .next-cta{text-align:center;margin:2.5rem auto 0;max-width:900px;padding:2rem 1.5rem;border:1px solid var(--pink);border-radius:16px;background:#fff}
 .next-q{font-size:clamp(1.2rem,3.4vw,1.6rem);color:var(--ink);margin:0 0 .5rem;line-height:1.6}
 .next-q strong{color:var(--pinkd);font-weight:500;background:linear-gradient(transparent 70%,#F48FB1 70%)}
@@ -289,7 +291,7 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
       <div class="approach-block">
         <div class="approach-content">
           <h3 class="approach-title"><strong>仙骨の歪み度</strong><strong id="diagPct">0</strong>％</h3>
-          <p class="approach-body" id="diagMsg"></p>
+          <ul class="approach-body" id="diagMsg"></ul>
         </div>
         <div class="approach-image-wrap">
           <svg class="pelvis-illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -309,19 +311,18 @@ td.b{color:var(--before)}td.a{color:var(--after);font-weight:700}
 
       <div class="benefits">
         <h2 class="section-title">仙骨を整えると、解消されるのは肩こりだけじゃない</h2>
-        <p class="benefits-lead">パウワウ独自の「仙骨ケア」（サクラムバランステクニック®）で、骨盤の中心にある仙骨にアプローチ。<br>土台が整うと、からだ全体にいい変化が広がっていきます。</p>
+        <p class="benefits-lead">パウワウ独自の「仙骨ケア」で、土台からアプローチ</p>
         <div class="benefit-grid">
-          <div class="benefit"><span class="bn">1</span><h4><em>肩こり・首こり・腰痛</em></h4><p>土台が整うと、首・肩・腰にかかる負担が分散されやすくなります。</p></div>
-          <div class="benefit"><span class="bn">2</span><h4><em>姿勢</em></h4><p>仙骨は背骨の土台。土台から整えることで、背すじが自然と伸びやすくなります。</p></div>
-          <div class="benefit"><span class="bn">3</span><h4><em>女性ホルモン</em></h4><p>骨盤まわりの巡りを整え、冷え・むくみ・生理など女性特有のお悩みにアプローチします。</p></div>
-          <div class="benefit"><span class="bn">4</span><h4><em>自律神経</em></h4><p>仙骨は自律神経の通り道。こわばりがゆるむと、眠りや気分の安定にもつながりやすくなります。</p></div>
-          <div class="benefit"><span class="bn">5</span><h4><em>お顔のたるみ・歪み</em></h4><p>姿勢が整うと首・肩の緊張がゆるみ、フェイスラインのたるみや歪みにもアプローチできます。</p></div>
+          <div class="benefit"><span class="bn">1</span><h4><em>肩こり・腰痛</em></h4><p>負担が分散される</p></div>
+          <div class="benefit"><span class="bn">2</span><h4><em>姿勢</em></h4><p>背すじが自然に伸びる</p></div>
+          <div class="benefit"><span class="bn">3</span><h4><em>女性ホルモン</em></h4><p>冷え・むくみ・生理</p></div>
+          <div class="benefit"><span class="bn">4</span><h4><em>自律神経</em></h4><p>眠り・気分の安定</p></div>
+          <div class="benefit"><span class="bn">5</span><h4><em>顔のたるみ・歪み</em></h4><p>フェイスラインすっきり</p></div>
         </div>
       </div>
 
       <div class="next-cta">
         <p class="next-q">では、実際に<strong>あなたの仙骨の状態</strong>を見てみましょう。</p>
-        <p class="next-sub">横向きの姿勢を撮影して、仙骨（骨盤）の傾きと姿勢のくずれをチェックします。</p>
         <div class="intro-go">
           <button class="btn pri" id="goPosture">姿勢をチェックする（横向き）</button>
           <button class="btn" id="goFace">小顔をチェックする</button>
@@ -433,7 +434,7 @@ const $ = id => document.getElementById(id);
 const C = {before:"#9C6B84", after:"#E91E63", ink:"#4A041E", ok:"#2f8f6a", warn:"#c9821c"};
 const LOGO = new Image(); LOGO.src = "powwow-logo.png";
 // 古い版がブラウザに残っていたら、最新版に自動で切り替える
-const APP_VER = "20261124-1000";
+const APP_VER = "20261124-1505";
 fetch(location.pathname + "?nc=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).then(t=>{
   const m = t.match(/const APP_VER = "([^"]+)"/);
   if (m && m[1] !== APP_VER && !sessionStorage.getItem("reloaded-"+m[1])) {
@@ -1441,9 +1442,7 @@ function sideRefHtml(flags, m){
       <div class="explain"><h5>姿勢の土台は「仙骨」</h5><ol>${steps}</ol>
         ${st?`<p>あなたの仙骨：<span class="sac ${Math.abs(v)<6?"ok":"ng"}">${st}${Math.abs(v)>=6?`（${Math.abs(v).toFixed(1)}°）`:""}</span></p>`:""}
         <p>→ 土台の仙骨から整えるのが近道</p></div>
-      <div class="yourcase"><h5>あなたの場合</h5>
-        <div class="yc h"><b>健康面</b>${li("h")}</div>
-        <div class="yc b"><b>美容面</b>${li("b")}</div></div></div></div>`;
+</div></div>`;
 }
 function faceRefHtml(list){
   const li=k=>pick(list,k).map(x=>`<span>${x}</span>`).join("");
@@ -1456,9 +1455,7 @@ function faceRefHtml(list){
         <li><b>むくみ・こわばり</b> → 頬・あご下に重み</li>
         <li><b>頬が下がる</b> → 顔が大きく見える</li></ol>
         <p>→ 姿勢と顔のこりを一緒に整えるのが近道</p></div>
-      <div class="yourcase"><h5>あなたの場合</h5>
-        <div class="yc h"><b>健康面</b>${li("health")}</div>
-        <div class="yc b"><b>美容面</b>${li("beauty")}</div></div></div></div>`;
+</div></div>`;
 }
 function illusHtml(mode, view, m, flags){
   const s=illusSet(mode, view, m, flags);
@@ -1487,33 +1484,23 @@ function topIssue(list){ return list.find(r=>r.lv==="alert"||r.lv==="warn") || n
 function evidence(shot, mode, top){
   const m=shot.m, f1=v=>Math.abs(v).toFixed(1);
   if (mode==="face"){
-    if (!top) return {lead:`フェイスライン（エラ下）は目のラインから約${f1(m.jaw)}mm、頬は約${f1(m.cheek)}mmの位置にあります。`,
-      chain:["首・肩のこりで顔まわりの流れが滞る","むくみ・こわばりで頬やあご下に重みがたまる","頬が下がり、輪郭がぼやけて見える"]};
-    if (top.k==="mouth") return {lead: m.mouth<0 ? `口角が唇の中心より約${f1(m.mouth)}mm下がっています。` : `口角の上がりが約${f1(m.mouth)}mmと小さめです。`,
-      chain:["口まわりの筋肉がこわばり、口角が下がる","頬の重みを支えきれなくなる","ほうれい線・フェイスラインのたるみにつながりやすい"]};
-    if (top.k==="eyeTail") return {lead: m.eyeTail<0 ? `目尻が目頭より${f1(m.eyeTail)}°下がっています。` : `目尻の上がりが${f1(m.eyeTail)}°と小さめです。`,
-      chain:["おでこ・こめかみの筋肉がこわばる","まぶたや目元の皮膚が下に引っぱられる","疲れ顔・老け見えにつながりやすい"]};
-    if (top.k==="eyeOpen") return {lead:`目の縦幅が約${f1(m.eyeOpen)}mmと小さめです。`,
-      chain:["おでこ・頭のこりでまぶたを持ち上げにくくなる","目元にむくみがたまりやすい","目が小さく、眠そうな印象に見えやすい"]};
+    if (!top) return {lead:"フェイスライン・頬の位置をチェック", chain:["首・肩のこり","むくみ・こわばり","頬が下がる"]};
+    if (top.k==="mouth") return {lead:`口角が約${f1(m.mouth)}mm ${m.mouth<0?"下がっている":"上がりが小さい"}`, chain:["口元がこわばる","頬を支えきれない","ほうれい線・たるみ"]};
+    if (top.k==="eyeTail") return {lead:`目尻の角度 ${m.eyeTail.toFixed(1)}°`, chain:["おでこ・こめかみが硬い","目元が下がる","疲れ顔に"]};
+    if (top.k==="eyeOpen") return {lead:`目の縦幅 約${f1(m.eyeOpen)}mm`, chain:["頭・おでこのこり","まぶたが重い","目が小さく見える"]};
   }
   const s=sideOf(shot.lm), p=i=>P(shot.lm,i,shot.w,shot.h), k=pxPerCm(shot);
   const nose=p(0), ear=p(s.ear), sh=p(s.sh), hip=p(s.hip), ank=p(s.ank), dir=nose.x>ear.x?1:-1;
-  const cm=(a,b)=>((a.x-b.x)*dir/k);
-  const fb=v=>v>=0?"前":"後ろ";
-  if (!top) return {lead:`耳・肩・骨盤・くるぶしがほぼ一直線に並んでいます（耳とくるぶしのずれ 約${f1(cm(ear,ank))}cm）。`, chain:["今のバランスを保つには、土台の仙骨をゆがませないことが大切です"]};
+  const cm=(a,b)=>((a.x-b.x)*dir/k), fb=v=>v>=0?"前":"後ろ";
+  if (!top) return {lead:"耳〜くるぶしがほぼ一直線", chain:[]};
   switch(top.k){
-    case "headFwd": { const d=cm(ear,sh); return {lead:`耳が肩の真上より約${f1(d)}cm${fb(d)}に出ていて、首が${f1(m.headFwd)}°傾いています。`,
-      chain:["頭の重さ（約5kg）を首・肩が前から支え続ける","首・肩の筋肉が常に緊張してこる","引っぱられて背中が丸まり、あご下にお肉がつきやすい"]}; }
-    case "trunk": { const d=cm(sh,hip); return {lead:`肩が骨盤の真上より約${f1(d)}cm${fb(d)}にあり、上半身が${f1(m.trunk)}°傾いています。`,
-      chain:["上半身の重みがお腹にのしかかる","お腹の力が抜け、呼吸も浅くなる","下腹ぽっこり・代謝ダウンで痩せにくくなりやすい"]}; }
-    case "sacrum": return {lead:`上半身と太ももの角度から、仙骨（骨盤）が約${f1(m.sacrum)}°${m.sacrum<0?"後ろに倒れて":"前に傾いて"}いると推定されます。`,
-      chain: m.sacrum<0 ? ["仙骨が後ろに倒れ、背骨のS字カーブが崩れる","背中が丸まり、頭が前に出る","下腹が出て、お尻が下がって見えやすい"]
-                        : ["仙骨が前に傾き、腰が反る","腰の筋肉に負担が集中する","下腹が前に出て、前ももが張りやすい"]};
-    case "pelvisShift": { const d=cm(hip,ank); return {lead:`骨盤がくるぶしの真上より約${f1(d)}cm${fb(d)}にずれています。`,
-      chain: d>=0 ? ["骨盤が前に出て、上半身は後ろに反ってバランスを取る","お腹が前に突き出し、腰に負担がかかる","下腹ぽっこり・お尻のたるみにつながりやすい"]
-                  : ["お尻が後ろに引け、腰が反る","腰と前ももに負担が集中する","腰痛・前ももの張りにつながりやすい"]}; }
-    case "plumb": { const d=cm(ear,ank); return {lead:`耳がくるぶしの真上より約${f1(d)}cm${fb(d)}にずれています（理想は一直線）。`,
-      chain:["体の重心がずれる","ふくらはぎや前ももが常に踏ん張る","脚の張り・むくみが抜けにくくなる"]}; }
+    case "headFwd": { const d=cm(ear,sh); return {lead:`耳が肩より約${f1(d)}cm${fb(d)}（首 ${f1(m.headFwd)}°）`, chain:["頭の重さが首・肩に","こり・猫背が進む","二重あご・たるみ"]}; }
+    case "trunk": { const d=cm(sh,hip); return {lead:`肩が骨盤より約${f1(d)}cm${fb(d)}（上体 ${f1(m.trunk)}°）`, chain:["お腹がゆるむ","呼吸が浅くなる","下腹ぽっこり"]}; }
+    case "sacrum": return {lead:`仙骨が約${f1(m.sacrum)}° ${m.sacrum<0?"後ろ":"前"}に傾き（推定）`,
+      chain: m.sacrum<0 ? ["仙骨が後ろに倒れる","背中が丸まる","下腹・垂れ尻"] : ["仙骨が前に傾く","腰が反る","腰痛・前もも張り"]};
+    case "pelvisShift": { const d=cm(hip,ank); return {lead:`骨盤がくるぶしより約${f1(d)}cm${fb(d)}`,
+      chain: d>=0 ? ["骨盤が前に出る","上体が反る","下腹・腰に負担"] : ["お尻が後ろに引ける","腰が反る","腰痛・前もも張り"]}; }
+    case "plumb": { const d=cm(ear,ank); return {lead:`耳がくるぶしより約${f1(d)}cm${fb(d)}`, chain:["重心がずれる","脚が踏ん張る","張り・むくみ"]}; }
   }
   return {lead:"", chain:[]};
 }
@@ -1523,7 +1510,7 @@ function topHtml(shot, mode, top){
     <span class="lbl">${top?"一番の課題":"チェック結果"}</span>
     <h4>${top?top.title:"大きな崩れは見られません"}</h4>
     <p class="ev"><b>写真から</b>${e.lead}</p>
-    ${e.chain.length?`<ol class="chain">${e.chain.map(c=>`<li>${c}</li>`).join("")}</ol>`:""}
+    ${e.chain.length?`<div class="chain">${e.chain.map(c=>`<span>${c}</span>`).join("<i>→</i>")}</div>`:""}
   </div>`;
 }
 // 写真に根拠を描く（赤）
@@ -1583,10 +1570,12 @@ function symLink(mode, top, k){
 }
 function symHtml(mode, top){
   if (!S.sym.size) return "";
-  const what = top ? SHORT[top.k] || "姿勢のくずれ" : (mode==="face" ? "顔まわりのこわばり" : "姿勢のくせ");
-  return `<div class="symlink"><h5>あなたのお悩みとのつながり</h5>
-    ${SYMPTOMS.filter(x=>S.sym.has(x.k)).map(x=>`<p><span class="sy">${x.t}</span>写真の<b>「${what}」</b>とつながっている可能性があります。${symLink(mode,top,x.k)}</p>`).join("")}
-    <p class="close">→ 土台の仙骨から整えることで、姿勢と一緒にこうした不調にもアプローチします。</p></div>`;
+  const face = mode==="face";
+  const L = {sleep:["疲れが取れない", face?"顔・首がこわばり休まりにくい":"呼吸が浅く休まりにくい"],
+             dull:["朝からだるい", face?"巡りが滞りむくみやすい":"姿勢を支えて疲れやすい"],
+             mood:["イライラ・気分", "自律神経が乱れやすい"],
+             body:["こり・冷え・むくみ", "血流が滞りやすい"]};
+  return `<div class="symlink"><h5>お悩みとのつながり</h5><ul>${SYMPTOMS.filter(x=>S.sym.has(x.k)).map(x=>`<li><span class="sy">${L[x.k][0]}</span>${L[x.k][1]}</li>`).join("")}</ul></div>`;
 }
 const SYM_IC = {sleep:"😴", dull:"😮‍💨", mood:"😤", body:"🌡"};
 const SYM_TX = {sleep:"寝ても疲れが取れない<br>寝つけない・眠りが浅い", dull:"朝からだるい<br>やる気が出ない", mood:"イライラしやすい<br>気分が沈みやすい", body:"肩こり・首こり・足のむくみ・<br>冷え・便秘"};
@@ -1614,14 +1603,14 @@ function careFlowHtml(mode){
       ${item("40代","case40-before.jpg","case40-after.jpg","二重アゴ・もたつき・たるみ・だるさ・疲れ顔","表情が明るい・目がぱっちり・たるみがきゅっと！二重あごスッキリ")}
       ${item("50代","case50-before.jpg","case50-after.jpg","ふけ顔・顔色が悪い・たるみ・疲れ顔","表情が明るい・目がぱっちり・たるみがきゅっと！・小顔")}
     </div>
-    <p class="gallery-note">この変化は、顔だけを施術した結果ではありません。<br>3ヶ月かけて土台である仙骨から整えたことで、心身ともに健やかになり、本来の美しさが引き出された結果です。</p>` : `<p class="reason-question">どちらの姿勢で生活したいですか？</p>
+    <p class="gallery-note">顔だけでなく、土台の仙骨から3ヶ月かけて整えた結果です。</p>` : `<p class="reason-question">どちらの姿勢で生活したいですか？</p>
     <div class="bodypair">
       <figure><span class="ba-tag ba-tag-before">施術前</span><img src="body-before.jpg" alt="施術前の姿勢（横向き）"><figcaption class="before-state">背中の丸み・頭が前に出る・下腹ぽっこり</figcaption></figure>
       <figure><span class="ba-tag ba-tag-after">施術後</span><img src="body-after.jpg" alt="施術後の姿勢（横向き）"><figcaption class="after-state">背すじが伸びる・お腹すっきり・ヒップの位置が上がる</figcaption></figure>
     </div>
-    <p class="gallery-note">姿勢の変化は、その場で背すじを伸ばしただけでは続きません。<br>土台である仙骨から整えることで、きれいな姿勢が自然と保てる体へ変わっていきます。</p>`}
+    <p class="gallery-note">土台の仙骨から整えると、きれいな姿勢が自然に続きます。</p>`}
     <div class="care-chart-section"><h2 class="section-title">3ヶ月で、根本から変わる。</h2>
-      <p class="care-chart-lead">パウワウのケアは、その場かぎりのリラクゼーションではありません。<br>身体は3ヶ月かけて変わっていくと言われています。仙骨から根本的に整えることで、その変化を後押しします。<br>年齢は関係ありません。今から始めても、決して遅くはないのです。</p>
+      <ul class="care-points"><li>その場かぎりのリラクゼーションではない</li><li>体は<b>3ヶ月</b>かけて変わる</li><li>年齢に関係なく、今からで遅くない</li></ul>
       <div class="care-chart-img-wrap"><img src="care-chart.png" alt="継続的なケアによる変化のイメージ図：土台期・調整期・メンテナンス期"></div></div>
     <div class="staff-banner"><div class="staff-banner-inner"><div class="staff-banner-eyebrow">STEP 1 — TODAY</div>
       <p class="staff-banner-text">今から、<span class="accent">1回目の施術</span>が始まります。<span class="sub">これはただのリラックス体験ではありません。</span>一緒に<span class="accent">改善</span>していきましょう。<br><br>よろしくお願いします。</p></div></div>
@@ -1662,7 +1651,6 @@ function showCheck(){
       <div>
         ${topHtml(b, mode, top)}
         ${symHtml(mode, top)}
-        <div class="tags">${flagged.length ? flagged.map(r=>`<span class="tag ${r.lv}">${r.lv==="alert"?"要注意":"注意"}｜${r.title}</span>`).join("") : `<span class="tag ok">大きな崩れは見られません</span>`}</div>
         <div class="issues">
           <div class="iss beauty"><b>美容面の課題</b><ul>${pick(list,"beauty").map(x=>`<li>${x}</li>`).join("")||"<li>今の状態をキープしましょう</li>"}</ul></div>
           <div class="iss health"><b>健康面の課題</b><ul>${pick(list,"health").map(x=>`<li>${x}</li>`).join("")||"<li>今の状態をキープしましょう</li>"}</ul></div>
@@ -1747,16 +1735,16 @@ $("tIntro").onclick=()=>screen("intro");
 $("goPosture").onclick=()=>setModeUI("posture");
 // 仙骨の歪み度（カウンセリングシートと同じ判定）
 const DIAG_MSG = {
-  50:"仙骨まわりの柔軟性が、やや低下しているかもしれません。放っておくと自律神経や女性ホルモンのバランスが乱れやすくなります。",
-  65:"仙骨の前傾・後傾がわずかに見られ、仙腸関節がこわばっている可能性があります。自律神経の働きが低下し、女性ホルモンバランスも乱れやすくなっている状態です。",
-  80:"仙骨の前傾・後傾が進み、仙腸関節も硬くなっていると考えられます。自律神経・女性ホルモンバランスの乱れに加え、骨格全体の歪みにもつながりはじめています。",
-  99:"仙骨の前傾・後傾がかなり進行し、仙腸関節も相当硬くなっている可能性が高いです。自律神経や女性ホルモンバランスが大きく乱れ、骨格の歪みもかなり進んでいる状態と考えられます。"
+  50:["仙骨まわりが少し硬くなっている可能性","自律神経・女性ホルモンが乱れやすい状態"],
+  65:["仙骨の前傾・後傾がわずかにある可能性","仙腸関節のこわばり","自律神経・女性ホルモンが乱れやすい"],
+  80:["仙骨の前傾・後傾が進んでいる可能性","仙腸関節が硬くなっている","骨格全体のゆがみにもつながり始め"],
+  99:["仙骨の前傾・後傾がかなり進んでいる可能性","仙腸関節がかなり硬い","自律神経・ホルモン・骨格に大きく影響"]
 };
 $("diagBtn").onclick=()=>{
   const n=S.sym.size, b=$("diagBtn");
   if(!n){ b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); $("symHint").textContent="まずは気になるものをタップして選んでください"; return; }
   const pct={1:50,2:65,3:80,4:99}[n];
-  $("diagPct").textContent=pct; $("diagMsg").textContent=DIAG_MSG[pct];
+  $("diagPct").textContent=pct; $("diagMsg").innerHTML=DIAG_MSG[pct].map(x=>`<li>${x}</li>`).join("");
   $("symHint").textContent="診断結果はこちら"; $("diagArea").hidden=false;
   setTimeout(()=>$("diagArea").scrollIntoView({behavior:"smooth",block:"start"}),200);
 };
