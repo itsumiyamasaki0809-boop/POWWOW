@@ -433,7 +433,7 @@ const $ = id => document.getElementById(id);
 const C = {before:"#9C6B84", after:"#E91E63", ink:"#4A041E", ok:"#2f8f6a", warn:"#c9821c"};
 const LOGO = new Image(); LOGO.src = "powwow-logo.png";
 // 古い版がブラウザに残っていたら、最新版に自動で切り替える
-const APP_VER = "20261123-1910";
+const APP_VER = "20261124-1000";
 fetch(location.pathname + "?nc=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).then(t=>{
   const m = t.match(/const APP_VER = "([^"]+)"/);
   if (m && m[1] !== APP_VER && !sessionStorage.getItem("reloaded-"+m[1])) {
@@ -957,7 +957,8 @@ function advance(){
   const order = S.mode==="face" ? [["front","before"],["front","after"]] : [["side","before"],["side","after"]];
   const justBefore = S.phase==="before";
   const next = order.find(([v,p]) => !S.shots[key(S.mode,v,p)]);
-  if (next){ S.view = next[0]; S.phase = next[1]; }
+  // Before を撮ったら After には自動で切り替えない（「施術へ進む」を押したときに After へ）
+  if (next && !(justBefore && next[1]==="after")){ S.view = next[0]; S.phase = next[1]; }
   S.smooth = {}; renderUI();
   if (!next) showResult();
   else if (justBefore && next[1]==="after") showCheck();
@@ -992,7 +993,7 @@ function renderUI(){
   $("viewTitle").textContent = S.mode==="face" ? "小顔：正面で撮影（真顔・髪を耳にかける）" : "姿勢：真横（右向き）で撮影";
   document.querySelectorAll("#viewSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===S.view));
   $("phB").setAttribute("aria-pressed", S.phase==="before"); $("phA").setAttribute("aria-pressed", S.phase==="after");
-  const sh=$("shoot"); sh.textContent = `${S.phase==="before"?"Before":"After"}（${S.mode==="face"?"小顔":S.view==="front"?"正面":"側面"}）を撮影`; sh.classList.toggle("after", S.phase==="after");
+  const sh=$("shoot"), done=!!S.shots[key()]; sh.textContent = `${S.phase==="before"?"Before":"After"}（${S.mode==="face"?"小顔":S.view==="front"?"正面":"側面"}）を${done?"撮り直す":"撮影"}`; sh.classList.toggle("after", S.phase==="after");
   const views = S.mode==="face" ? ["front"] : ["side"];
   $("slots").innerHTML = views.flatMap(v=>["before","after"].map(p=>{
     const s=S.shots[key(S.mode,v,p)], cur = v===(S.mode==="face"?"front":S.view) && p===S.phase;
